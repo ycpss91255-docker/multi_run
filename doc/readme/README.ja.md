@@ -9,7 +9,7 @@
 
 複数のワークスペースの Docker コンテナを同時に起動。
 
-[English](../../README.md) | [繁體中文](README.zh-TW.md) | [简体中文](README.zh-CN.md)
+**[English](../../README.md)** | **[繁體中文](README.zh-TW.md)** | **[简体中文](README.zh-CN.md)** | **[日本語](README.ja.md)**
 
 ## TL;DR
 

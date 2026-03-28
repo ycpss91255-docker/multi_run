@@ -9,7 +9,7 @@
 
 同时启动多个不同工作区的 Docker 容器。
 
-[English](../../README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md)
+**[English](../../README.md)** | **[繁體中文](README.zh-TW.md)** | **[简体中文](README.zh-CN.md)** | **[日本語](README.ja.md)**
 
 ## TL;DR
 
