@@ -7,7 +7,7 @@ _lib_dir() {
     cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P
 }
 
-MULTI_ROOT="$(_lib_dir)"
+MULTI_ROOT="$(cd -- "$(_lib_dir)/.." && pwd -P)"
 WORKSPACE_DIR="${WORKSPACE_DIR:-${MULTI_ROOT}/workspace}"
 export GENERATED_COMPOSE="${MULTI_ROOT}/.multi_compose.yaml"
 export STATE_FILE="${MULTI_ROOT}/.multi_state"

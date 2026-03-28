@@ -246,7 +246,8 @@ multi_run/
 ├── status.sh                  # 顯示狀態
 ├── add.sh                     # 加入工作區
 ├── remove.sh                  # 移除工作區
-├── lib.sh                     # 共用函式
+├── script/
+│   ├── lib.sh                  # 共用函式
 ├── workspace/                # Docker repo 的 symlinks
 ├── Makefile                   # 指令入口
 ├── compose.yaml               # CI 執行器

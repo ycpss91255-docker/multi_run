@@ -264,12 +264,13 @@ multi_run/
 ├── status.sh                  # Show status
 ├── add.sh                     # Add workspace
 ├── remove.sh                  # Remove workspace
-├── lib.sh                     # Shared functions
-├── workspace/                # Symlinks to Docker repos
+├── workspace/                 # Symlinks to Docker repos
 ├── Makefile                   # Command entry
 ├── compose.yaml               # CI runner
 ├── script/
-│   └── ci.sh                  # CI pipeline
+│   ├── lib.sh                 # Shared functions
+│   ├── ci.sh                  # CI pipeline
+│   └── resolve_compose.py     # Compose YAML merge tool
 ├── test/
 │   ├── multi_run_spec.bats
 │   └── test_helper.bash

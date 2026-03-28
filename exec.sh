@@ -3,8 +3,8 @@
 
 set -euo pipefail
 
-# shellcheck source=lib.sh
-source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)/lib.sh"
+# shellcheck source=script/lib.sh
+source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)/script/lib.sh"
 
 usage() {
     cat >&2 <<'EOF'

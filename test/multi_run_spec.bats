@@ -37,16 +37,6 @@ setup() {
     assert [ -x "${REPO_ROOT}/status.sh" ]
 }
 
-@test "add.sh exists and is executable" {
-    assert [ -f "${REPO_ROOT}/add.sh" ]
-    assert [ -x "${REPO_ROOT}/add.sh" ]
-}
-
-@test "remove.sh exists and is executable" {
-    assert [ -f "${REPO_ROOT}/remove.sh" ]
-    assert [ -x "${REPO_ROOT}/remove.sh" ]
-}
-
 # ════════════════════════════════════════════════════════════════════
 # Shell conventions: set -euo pipefail
 # ════════════════════════════════════════════════════════════════════
@@ -73,16 +63,6 @@ setup() {
 
 @test "status.sh uses set -euo pipefail" {
     run grep "set -euo pipefail" "${REPO_ROOT}/status.sh"
-    assert_success
-}
-
-@test "add.sh uses set -euo pipefail" {
-    run grep "set -euo pipefail" "${REPO_ROOT}/add.sh"
-    assert_success
-}
-
-@test "remove.sh uses set -euo pipefail" {
-    run grep "set -euo pipefail" "${REPO_ROOT}/remove.sh"
     assert_success
 }
 
@@ -115,14 +95,10 @@ setup() {
     assert_success
 }
 
-@test "add.sh -h exits 0" {
-    run bash "${REPO_ROOT}/add.sh" -h
+@test "init.sh --list works" {
+    run bash "${REPO_ROOT}/init.sh" --list
     assert_success
-}
-
-@test "remove.sh -h exits 0" {
-    run bash "${REPO_ROOT}/remove.sh" -h
-    assert_success
+    assert_output --partial "Registered"
 }
 
 @test "init.sh -h prints usage" {
@@ -131,22 +107,22 @@ setup() {
 }
 
 # ════════════════════════════════════════════════════════════════════
-# add.sh / remove.sh
+# init.sh --add / --remove
 # ════════════════════════════════════════════════════════════════════
 
-@test "add.sh creates symlink in workspace/" {
+@test "init.sh --add creates symlink in workspace/" {
     local test_dir="${BATS_TEST_TMPDIR}/fake_repo"
     mkdir -p "${test_dir}"
-    WORKSPACE_DIR="${BATS_TEST_TMPDIR}/ws" run bash "${REPO_ROOT}/add.sh" "${test_dir}"
+    WORKSPACE_DIR="${BATS_TEST_TMPDIR}/ws" run bash "${REPO_ROOT}/init.sh" --add "${test_dir}"
     assert_success
     assert [ -L "${BATS_TEST_TMPDIR}/ws/fake_repo" ]
 }
 
-@test "remove.sh deletes symlink from workspace/" {
+@test "init.sh --remove deletes symlink from workspace/" {
     local ws_dir="${BATS_TEST_TMPDIR}/ws"
     mkdir -p "${ws_dir}"
     ln -sf /tmp "${ws_dir}/test_link"
-    WORKSPACE_DIR="${ws_dir}" run bash "${REPO_ROOT}/remove.sh" test_link
+    WORKSPACE_DIR="${ws_dir}" run bash "${REPO_ROOT}/init.sh" --remove test_link
     assert_success
     assert [ ! -L "${ws_dir}/test_link" ]
 }
@@ -157,7 +133,7 @@ setup() {
 
 @test "_path_id generates unique ID from path" {
     skip "tested via bash -c below"
-    source "${REPO_ROOT}/lib.sh"
+    source "${REPO_ROOT}/script/lib.sh"
     local test_dir="${BATS_TEST_TMPDIR}/fake_repo"
     mkdir -p "${test_dir}"
     echo "IMAGE_NAME=test_image" > "${test_dir}/.env"
@@ -172,13 +148,13 @@ setup() {
 # ════════════════════════════════════════════════════════════════════
 
 @test "_log outputs [multi] prefix" {
-    run bash -c "source ${REPO_ROOT}/lib.sh; _log 'hello world'"
+    run bash -c "source ${REPO_ROOT}/script/lib.sh; _log 'hello world'"
     assert_success
     assert_output "[multi] hello world"
 }
 
 @test "_error outputs ERROR prefix and exits 1" {
-    run bash -c "source ${REPO_ROOT}/lib.sh; _error 'something broke'"
+    run bash -c "source ${REPO_ROOT}/script/lib.sh; _error 'something broke'"
     assert_failure
     assert_output --partial "[multi] ERROR: something broke"
 }
@@ -190,7 +166,7 @@ setup() {
 @test "_get_workspace_paths returns empty for empty workspace dir" {
     local ws="${BATS_TEST_TMPDIR}/empty_ws"
     mkdir -p "${ws}"
-    run bash -c "WORKSPACE_DIR=${ws} source ${REPO_ROOT}/lib.sh; _get_workspace_paths"
+    run bash -c "WORKSPACE_DIR=${ws} source ${REPO_ROOT}/script/lib.sh; _get_workspace_paths"
     assert_success
     assert_output ""
 }
@@ -200,7 +176,7 @@ setup() {
     local target="${BATS_TEST_TMPDIR}/fake_target"
     mkdir -p "${ws}" "${target}"
     ln -sf "${target}" "${ws}/my_repo"
-    run bash -c "export WORKSPACE_DIR=${ws}; source ${REPO_ROOT}/lib.sh; WORKSPACE_DIR=${ws}; _get_workspace_paths"
+    run bash -c "export WORKSPACE_DIR=${ws}; source ${REPO_ROOT}/script/lib.sh; WORKSPACE_DIR=${ws}; _get_workspace_paths"
     assert_success
     assert_output "${target}"
 }
@@ -210,51 +186,51 @@ setup() {
     local target="${BATS_TEST_TMPDIR}/real_target"
     mkdir -p "${ws}" "${target}" "${ws}/not_a_link"
     ln -sf "${target}" "${ws}/is_a_link"
-    run bash -c "export WORKSPACE_DIR=${ws}; source ${REPO_ROOT}/lib.sh; WORKSPACE_DIR=${ws}; _get_workspace_paths"
+    run bash -c "export WORKSPACE_DIR=${ws}; source ${REPO_ROOT}/script/lib.sh; WORKSPACE_DIR=${ws}; _get_workspace_paths"
     assert_success
     assert_output "${target}"
 }
 
 # ════════════════════════════════════════════════════════════════════
-# add.sh: edge cases
+# init.sh --add: edge cases
 # ════════════════════════════════════════════════════════════════════
 
-@test "add.sh fails without arguments" {
-    run bash "${REPO_ROOT}/add.sh"
+@test "init.sh --add fails without arguments" {
+    run bash "${REPO_ROOT}/init.sh" --add
     assert_failure
-    assert_output --partial "ERROR"
+    assert_output --partial "Missing path"
 }
 
-@test "add.sh fails for non-existent path" {
-    run bash "${REPO_ROOT}/add.sh" /nonexistent/path
+@test "init.sh --add fails for non-existent path" {
+    run bash "${REPO_ROOT}/init.sh" --add /nonexistent/path
     assert_failure
 }
 
-@test "add.sh reports already exists for duplicate" {
+@test "init.sh --add reports already exists for duplicate" {
     local test_dir="${BATS_TEST_TMPDIR}/dup_repo"
     mkdir -p "${test_dir}"
     local ws="${BATS_TEST_TMPDIR}/ws_dup"
-    WORKSPACE_DIR="${ws}" run bash "${REPO_ROOT}/add.sh" "${test_dir}"
+    WORKSPACE_DIR="${ws}" run bash "${REPO_ROOT}/init.sh" --add "${test_dir}"
     assert_success
-    WORKSPACE_DIR="${ws}" run bash "${REPO_ROOT}/add.sh" "${test_dir}"
+    WORKSPACE_DIR="${ws}" run bash "${REPO_ROOT}/init.sh" --add "${test_dir}"
     assert_success
     assert_output --partial "Already exists"
 }
 
 # ════════════════════════════════════════════════════════════════════
-# remove.sh: edge cases
+# init.sh --remove: edge cases
 # ════════════════════════════════════════════════════════════════════
 
-@test "remove.sh fails without arguments" {
-    run bash "${REPO_ROOT}/remove.sh"
+@test "init.sh --remove fails without arguments" {
+    run bash "${REPO_ROOT}/init.sh" --remove
     assert_failure
-    assert_output --partial "ERROR"
+    assert_output --partial "Missing name"
 }
 
-@test "remove.sh fails for non-existent name" {
+@test "init.sh --remove fails for non-existent name" {
     local ws="${BATS_TEST_TMPDIR}/ws_rm"
     mkdir -p "${ws}"
-    WORKSPACE_DIR="${ws}" run bash "${REPO_ROOT}/remove.sh" nonexistent
+    WORKSPACE_DIR="${ws}" run bash "${REPO_ROOT}/init.sh" --remove nonexistent
     assert_failure
     assert_output --partial "Not found"
 }
@@ -285,7 +261,7 @@ setup() {
 @test "_path_id falls back to dirname when no .env" {
     local test_dir="${BATS_TEST_TMPDIR}/no_env_repo"
     mkdir -p "${test_dir}"
-    run bash -c "source ${REPO_ROOT}/lib.sh; _path_id ${test_dir}"
+    run bash -c "source ${REPO_ROOT}/script/lib.sh; _path_id ${test_dir}"
     assert_success
     assert_output --regexp "^no_env_repo_[0-9a-f]{4}$"
 }
@@ -296,9 +272,9 @@ setup() {
     mkdir -p "${dir_a}" "${dir_b}"
     echo "IMAGE_NAME=ros_noetic" > "${dir_a}/.env"
     echo "IMAGE_NAME=ros_noetic" > "${dir_b}/.env"
-    run bash -c "source ${REPO_ROOT}/lib.sh; _path_id ${BATS_TEST_TMPDIR}/ws_a/docker_ros"
+    run bash -c "source ${REPO_ROOT}/script/lib.sh; _path_id ${BATS_TEST_TMPDIR}/ws_a/docker_ros"
     id_a="${output}"
-    run bash -c "source ${REPO_ROOT}/lib.sh; _path_id ${BATS_TEST_TMPDIR}/ws_b/docker_ros"
+    run bash -c "source ${REPO_ROOT}/script/lib.sh; _path_id ${BATS_TEST_TMPDIR}/ws_b/docker_ros"
     id_b="${output}"
     assert [ "${id_a}" != "${id_b}" ]
 }
@@ -348,8 +324,8 @@ setup() {
     # Clean workspace
     find "${REPO_ROOT}/workspace/" -type l -delete 2>/dev/null || true
 
-    # Add workspace via add.sh
-    run bash "${REPO_ROOT}/add.sh" "${mock}"
+    # Add workspace via init.sh --add
+    run bash "${REPO_ROOT}/init.sh" --add "${mock}"
     assert_success
 
     # Init without args — should scan workspace/
@@ -417,4 +393,10 @@ setup() {
     run bash "${REPO_ROOT}/status.sh"
     assert_success
     assert_output --partial "No active session"
+}
+
+@test "init.sh --list shows registered workspace" {
+    run bash -c "ln -sf /tmp /source/workspace/test_list_link && bash /source/init.sh --list; exit 0"
+    assert_success
+    assert_output --partial "test_list_link"
 }
