@@ -400,3 +400,9 @@ setup() {
     assert_success
     assert_output --partial "test_list_link"
 }
+
+@test "init.sh --list shows empty when workspace dir missing" {
+    run env WORKSPACE_DIR="/nonexistent" bash "${REPO_ROOT}/init.sh" --list
+    assert_success
+    assert_output --partial "(empty)"
+}
