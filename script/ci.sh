@@ -11,7 +11,7 @@ _install_deps() {
         apt-get update -qq
         apt-get install -y --no-install-recommends \
             bats bats-support bats-assert shellcheck \
-            docker.io python3-yaml \
+            docker.io python3-yaml python3-coverage \
             ca-certificates iptables curl
         # Install docker compose plugin
         mkdir -p /usr/local/lib/docker/cli-plugins
@@ -49,8 +49,11 @@ _run_tests() {
 }
 
 _run_python_tests() {
-    echo "--- Running Python Tests ---"
-    python3 "${REPO_ROOT}/test/test_resolve_compose.py"
+    echo "--- Running Python Tests with Coverage ---"
+    cd "${REPO_ROOT}"
+    python3-coverage run --source=script test/test_resolve_compose.py
+    python3-coverage xml -o coverage/python-coverage.xml
+    python3-coverage report
 }
 
 _run_coverage() {

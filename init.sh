@@ -36,9 +36,7 @@ local_path="$(cd "${arg}" 2>/dev/null && pwd -P)" || _error "Directory not found
         paths+=("${local_path}")
     done
 else
-    while IFS= read -r p; do
-        [[ -n "${p}" ]] && paths+=("${p}")
-    done < <(_get_workspace_paths)
+    mapfile -t paths < <(_get_workspace_paths)
 fi
 
 [[ ${#paths[@]} -eq 0 ]] && _error "No workspace found. Use ./add.sh or provide paths."

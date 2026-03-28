@@ -26,10 +26,11 @@ if [[ ! -f "${GENERATED_COMPOSE}" ]]; then
 fi
 
 _log "Workspaces:"
-while IFS= read -r p; do
+mapfile -t _ws_lines < "${STATE_FILE}"
+for p in "${_ws_lines[@]}"; do
     [[ -z "${p}" ]] && continue
     _log "  - ${p}"
-done < "${STATE_FILE}"
+done
 
 _log ""
 docker compose -f "${GENERATED_COMPOSE}" ps
