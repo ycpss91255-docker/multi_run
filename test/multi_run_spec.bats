@@ -304,26 +304,95 @@ setup() {
 # Integration tests (requires Docker daemon — DinD)
 # ════════════════════════════════════════════════════════════════════
 
-@test "full lifecycle: init → run → status → stop with mock repo" {
+@test "full lifecycle: init → run → status → exec → stop with mock repo" {
     command -v docker >/dev/null 2>&1 || skip "Docker not available"
     docker info >/dev/null 2>&1 || skip "Docker daemon not running"
 
     local mock="${REPO_ROOT}/test/fixture/mock_repo"
 
-    # Init
+    # Init (direct path mode)
     run bash "${REPO_ROOT}/init.sh" "${mock}"
     assert_success
+    assert_output --partial "Generated"
 
     # Run
     run bash "${REPO_ROOT}/run.sh"
     assert_success
 
-    # Status — should show running container
+    # Status — should show running container and workspace path
     run bash "${REPO_ROOT}/status.sh"
     assert_success
     assert_output --partial "mock_repo"
 
+    # Exec — run a command inside the container
+    local svc_name
+    svc_name=$(grep -oP 'mock_repo_[0-9a-f]+' "${REPO_ROOT}/.multi_compose.yaml" | head -1)
+    run bash "${REPO_ROOT}/exec.sh" "${svc_name}" echo "hello from container"
+    assert_success
+    assert_output --partial "hello from container"
+
     # Stop
     run bash "${REPO_ROOT}/stop.sh"
     assert_success
+}
+
+@test "workspace scan mode: add → init (no args) → run → stop" {
+    command -v docker >/dev/null 2>&1 || skip "Docker not available"
+    docker info >/dev/null 2>&1 || skip "Docker daemon not running"
+
+    local mock="${REPO_ROOT}/test/fixture/mock_repo"
+
+    # Clean workspace
+    rm -f "${REPO_ROOT}/workspace/"*
+
+    # Add workspace via add.sh
+    run bash "${REPO_ROOT}/add.sh" "${mock}"
+    assert_success
+
+    # Init without args — should scan workspace/
+    run bash "${REPO_ROOT}/init.sh"
+    assert_success
+    assert_output --partial "Generated"
+
+    # Run
+    run bash "${REPO_ROOT}/run.sh"
+    assert_success
+
+    # Stop
+    run bash "${REPO_ROOT}/stop.sh"
+    assert_success
+
+    # Cleanup
+    rm -f "${REPO_ROOT}/workspace/"*
+}
+
+@test "exec.sh fails without arguments" {
+    run bash "${REPO_ROOT}/exec.sh"
+    assert_failure
+    assert_output --partial "ERROR"
+}
+
+@test "init.sh fails with no workspace and no args" {
+    command -v docker >/dev/null 2>&1 || skip "Docker not available"
+
+    # Ensure workspace/ is empty
+    rm -f "${REPO_ROOT}/workspace/"*
+    rm -f "${REPO_ROOT}/.multi_compose.yaml" "${REPO_ROOT}/.multi_state"
+
+    run bash "${REPO_ROOT}/init.sh"
+    assert_failure
+    assert_output --partial "No workspace found"
+
+    # Cleanup
+    rm -f "${REPO_ROOT}/workspace/"*
+}
+
+@test "init.sh fails for repo without .env and no setup.sh" {
+    command -v docker >/dev/null 2>&1 || skip "Docker not available"
+    docker info >/dev/null 2>&1 || skip "Docker daemon not running"
+
+    local mock="${REPO_ROOT}/test/fixture/mock_no_env"
+    run bash "${REPO_ROOT}/init.sh" "${mock}"
+    assert_failure
+    assert_output --partial "No .env"
 }

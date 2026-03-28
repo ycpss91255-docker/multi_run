@@ -70,24 +70,8 @@ for p in "${paths[@]}"; do
         || _error "Failed to resolve compose in ${p}"
 
     # Extract devel service, rename, remove container_name
-    echo "${resolved}" | python3 -c "
-import sys, yaml, io
-
-data = yaml.safe_load(sys.stdin)
-services = data.get('services', {})
-
-if 'devel' not in services:
-    sys.exit(0)
-
-svc = services['devel']
-svc.pop('container_name', None)
-
-output = {'${instance_id}': svc}
-stream = io.StringIO()
-yaml.dump(output, stream, default_flow_style=False, allow_unicode=True)
-for line in stream.getvalue().splitlines():
-    print(f'  {line}')
-" >> "${GENERATED_COMPOSE}"
+    echo "${resolved}" | python3 "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)/script/resolve_compose.py" "${instance_id}" \
+        >> "${GENERATED_COMPOSE}"
 
     echo "${p}" >> "${STATE_FILE}"
     _log "Added: $(basename "${p}") → ${instance_id}"

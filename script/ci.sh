@@ -48,8 +48,13 @@ _run_tests() {
     bats "${REPO_ROOT}/test/"
 }
 
+_run_python_tests() {
+    echo "--- Running Python Tests ---"
+    python3 "${REPO_ROOT}/test/test_resolve_compose.py"
+}
+
 _run_coverage() {
-    echo "--- Running Tests with Kcov Coverage ---"
+    echo "--- Running Bats Tests with Kcov Coverage ---"
     kcov \
         --include-path="${REPO_ROOT}" \
         --exclude-path="${REPO_ROOT}/test/,${REPO_ROOT}/script/,${REPO_ROOT}/.github/" \
@@ -100,6 +105,7 @@ main() {
             _install_deps
             _start_dockerd
             _run_shellcheck
+            _run_python_tests
             _run_coverage
             _fix_permissions
             echo "Coverage report: ${REPO_ROOT}/coverage/index.html"
