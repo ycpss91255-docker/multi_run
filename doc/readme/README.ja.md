@@ -11,6 +11,17 @@
 
 **[English](../../README.md)** | **[繁體中文](README.zh-TW.md)** | **[简体中文](README.zh-CN.md)** | **[日本語](README.ja.md)**
 
+---
+
+## 目次
+
+- [TL;DR](#tldr)
+- [概要](#概要)
+- [スクリプト](#スクリプト)
+- [テスト](#テスト)
+
+---
+
 ## TL;DR
 
 ```bash
