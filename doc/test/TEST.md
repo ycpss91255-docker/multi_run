@@ -45,8 +45,8 @@
 
 | Test | Description |
 |------|-------------|
-| `add.sh creates symlink in workspaces/` | Symlink creation |
-| `remove.sh deletes symlink from workspaces/` | Symlink deletion |
+| `add.sh creates symlink in workspace/` | Symlink creation |
+| `remove.sh deletes symlink from workspace/` | Symlink deletion |
 
 ### Path ID (2)
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# init.sh - Generate merged compose from workspaces
+# init.sh - Generate merged compose from workspace
 
 set -euo pipefail
 
@@ -10,17 +10,17 @@ usage() {
     cat >&2 <<'EOF'
 Usage: ./init.sh [-h] [path1 path2 ...]
 
-Generate .multi_compose.yaml from workspaces/ symlinks or given paths.
+Generate .multi_compose.yaml from workspace/ symlinks or given paths.
 Each workspace's compose.yaml is resolved and merged with unique service names.
 
-Without arguments: scans workspaces/ directory.
-With arguments: uses given paths (ignores workspaces/).
+Without arguments: scans workspace/ directory.
+With arguments: uses given paths (ignores workspace/).
 
 Options:
   -h, --help    Show this help
 
 Examples:
-  ./init.sh                                    # scan workspaces/
+  ./init.sh                                    # scan workspace/
   ./init.sh ~/ws_a/docker_ros_noetic ~/ws_b/docker_ros2_humble
 EOF
     exit 0
@@ -41,7 +41,7 @@ else
     done < <(_get_workspace_paths)
 fi
 
-[[ ${#paths[@]} -eq 0 ]] && _error "No workspaces found. Use ./add.sh or provide paths."
+[[ ${#paths[@]} -eq 0 ]] && _error "No workspace found. Use ./add.sh or provide paths."
 
 # Generate compose
 cat > "${GENERATED_COMPOSE}" <<'HEADER'

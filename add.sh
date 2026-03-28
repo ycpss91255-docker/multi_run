@@ -11,7 +11,7 @@ usage() {
 Usage: ./add.sh [-h] <path>
 
 Add a Docker workspace to multi_run.
-Creates a symlink in workspaces/ pointing to the given path.
+Creates a symlink in workspace/ pointing to the given path.
 
 Options:
   -h, --help    Show this help
@@ -28,11 +28,11 @@ EOF
 TARGET_PATH="$(cd "$1" && pwd -P)" || _error "Directory not found: $1"
 NAME="$(basename "${TARGET_PATH}")"
 
-mkdir -p "${WORKSPACES_DIR}"
+mkdir -p "${WORKSPACE_DIR}"
 
-if [[ -L "${WORKSPACES_DIR}/${NAME}" ]]; then
+if [[ -L "${WORKSPACE_DIR}/${NAME}" ]]; then
     _log "Already exists: ${NAME}"
 else
-    ln -sf "${TARGET_PATH}" "${WORKSPACES_DIR}/${NAME}"
+    ln -sf "${TARGET_PATH}" "${WORKSPACE_DIR}/${NAME}"
     _log "Added: ${NAME} → ${TARGET_PATH}"
 fi

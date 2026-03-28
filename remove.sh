@@ -11,7 +11,7 @@ usage() {
 Usage: ./remove.sh [-h] <name>
 
 Remove a Docker workspace from multi_run.
-Deletes the symlink from workspaces/.
+Deletes the symlink from workspace/.
 
 Options:
   -h, --help    Show this help
@@ -26,7 +26,7 @@ EOF
 [[ $# -lt 1 ]] && _error "Missing name. Usage: ./remove.sh <name>"
 
 NAME="$1"
-LINK="${WORKSPACES_DIR}/${NAME}"
+LINK="${WORKSPACE_DIR}/${NAME}"
 
 if [[ -L "${LINK}" ]]; then
     rm -f "${LINK}"

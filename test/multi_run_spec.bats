@@ -131,19 +131,19 @@ setup() {
 # add.sh / remove.sh
 # ════════════════════════════════════════════════════════════════════
 
-@test "add.sh creates symlink in workspaces/" {
+@test "add.sh creates symlink in workspace/" {
     local test_dir="${BATS_TEST_TMPDIR}/fake_repo"
     mkdir -p "${test_dir}"
-    WORKSPACES_DIR="${BATS_TEST_TMPDIR}/ws" run bash "${REPO_ROOT}/add.sh" "${test_dir}"
+    WORKSPACE_DIR="${BATS_TEST_TMPDIR}/ws" run bash "${REPO_ROOT}/add.sh" "${test_dir}"
     assert_success
     assert [ -L "${BATS_TEST_TMPDIR}/ws/fake_repo" ]
 }
 
-@test "remove.sh deletes symlink from workspaces/" {
+@test "remove.sh deletes symlink from workspace/" {
     local ws_dir="${BATS_TEST_TMPDIR}/ws"
     mkdir -p "${ws_dir}"
     ln -sf /tmp "${ws_dir}/test_link"
-    WORKSPACES_DIR="${ws_dir}" run bash "${REPO_ROOT}/remove.sh" test_link
+    WORKSPACE_DIR="${ws_dir}" run bash "${REPO_ROOT}/remove.sh" test_link
     assert_success
     assert [ ! -L "${ws_dir}/test_link" ]
 }

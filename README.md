@@ -7,7 +7,7 @@
 ![ShellCheck](https://img.shields.io/badge/ShellCheck-Compliant-brightgreen?style=flat-square)
 [![License](https://img.shields.io/badge/License-GPL--3.0-yellow?style=flat-square)](./LICENSE)
 
-Launch multiple Docker containers from different workspaces simultaneously.
+Launch multiple Docker containers from different workspace simultaneously.
 
 **[English](README.md)** | **[繁體中文](doc/readme/README.zh-TW.md)** | **[简体中文](doc/readme/README.zh-CN.md)** | **[日本語](doc/readme/README.ja.md)**
 
@@ -22,9 +22,9 @@ Launch multiple Docker containers from different workspaces simultaneously.
 
 ## Overview
 
-When working with multiple ROS workspaces or Docker environments, you often need to run several containers at the same time (e.g., a ROS Noetic container for one robot and a ROS 2 Humble container for another). Normally you'd have to open multiple terminals, `cd` into each repo, and run `./run.sh` manually.
+When working with multiple ROS workspace or Docker environments, you often need to run several containers at the same time (e.g., a ROS Noetic container for one robot and a ROS 2 Humble container for another). Normally you'd have to open multiple terminals, `cd` into each repo, and run `./run.sh` manually.
 
-**multi_run** solves this by managing all your Docker workspaces in one place. It merges multiple `compose.yaml` files into a single file with unique service names, so you can start, stop, and manage all containers with simple commands.
+**multi_run** solves this by managing all your Docker workspace in one place. It merges multiple `compose.yaml` files into a single file with unique service names, so you can start, stop, and manage all containers with simple commands.
 
 Works with any [docker_template](https://github.com/ycpss91255-docker/docker_template)-based repo.
 
@@ -44,9 +44,9 @@ git clone git@github.com:ycpss91255-docker/multi_run.git
 cd multi_run
 ```
 
-### 2. Register your workspaces
+### 2. Register your workspace
 
-Suppose you have two workspaces:
+Suppose you have two workspace:
 ```
 ~/robot_a_ws/docker_ros_noetic/     ← ROS 1 Noetic environment
 ~/robot_b_ws/docker_ros2_humble/    ← ROS 2 Humble environment
@@ -61,9 +61,9 @@ Register them:
 # [multi] Added: docker_ros2_humble → /home/user/robot_b_ws/docker_ros2_humble
 ```
 
-This creates symlinks in `workspaces/`:
+This creates symlinks in `workspace/`:
 ```
-workspaces/
+workspace/
 ├── docker_ros_noetic → ~/robot_a_ws/docker_ros_noetic
 └── docker_ros2_humble → ~/robot_b_ws/docker_ros2_humble
 ```
@@ -79,7 +79,7 @@ workspaces/
 ```
 
 What happens:
-1. Scans `workspaces/` for all symlinks
+1. Scans `workspace/` for all symlinks
 2. Runs `docker compose config` on each repo to resolve all `.env` variables
 3. Renames `devel` service to a unique ID (e.g., `ros_noetic_2a8b`) using image name + path hash
 4. Merges everything into `.multi_compose.yaml`
@@ -98,7 +98,7 @@ What happens:
 
 ```bash
 ./status.sh
-# [multi] Active workspaces:
+# [multi] Active workspace:
 # [multi]   - /home/user/robot_a_ws/docker_ros_noetic
 # [multi]   - /home/user/robot_b_ws/docker_ros2_humble
 #
@@ -129,7 +129,7 @@ Use the service name from `./status.sh`:
 
 ### Mode 1: Workspace symlinks (recommended for daily use)
 
-Register workspaces once, then `./init.sh && ./run.sh` every time.
+Register workspace once, then `./init.sh && ./run.sh` every time.
 
 ```bash
 # One-time setup
@@ -145,14 +145,14 @@ Register workspaces once, then `./init.sh && ./run.sh` every time.
 
 ### Mode 2: Direct paths (for one-off use)
 
-Specify paths directly without saving to `workspaces/`.
+Specify paths directly without saving to `workspace/`.
 
 ```bash
 ./init.sh ~/robot_a_ws/docker_ros_noetic ~/robot_b_ws/docker_ros2_humble
 ./run.sh
 ```
 
-**Advantage**: Quick and temporary. Does not modify `workspaces/`.
+**Advantage**: Quick and temporary. Does not modify `workspace/`.
 
 ## Architecture
 
@@ -160,7 +160,7 @@ Specify paths directly without saving to `workspaces/`.
 flowchart TD
     subgraph "Setup (one-time)"
         add["./add.sh path"]
-        ws["workspaces/<br/>symlinks"]
+        ws["workspace/<br/>symlinks"]
         add -->|"create symlink"| ws
     end
 
@@ -193,7 +193,7 @@ flowchart TD
 
 | Script | Usage | Description |
 |--------|-------|-------------|
-| `add.sh <path>` | `./add.sh ~/ws/docker_ros_noetic` | Register a workspace (symlink in `workspaces/`) |
+| `add.sh <path>` | `./add.sh ~/ws/docker_ros_noetic` | Register a workspace (symlink in `workspace/`) |
 | `remove.sh <name>` | `./remove.sh docker_ros_noetic` | Unregister a workspace |
 | `init.sh [path...]` | `./init.sh` or `./init.sh path1 path2` | Generate `.multi_compose.yaml` |
 | `run.sh` | `./run.sh` | Start all containers |
@@ -207,15 +207,15 @@ All scripts support `-h` / `--help`.
 
 | Scenario | Example | Status |
 |----------|---------|--------|
-| Different workspaces, different repos | `~/ws_a/docker_ros_noetic` + `~/ws_b/docker_ros2_humble` | Tested |
+| Different workspace, different repos | `~/ws_a/docker_ros_noetic` + `~/ws_b/docker_ros2_humble` | Tested |
 | Same workspace, different repos | `~/ws/osrf_ros_noetic` + `~/ws/osrf_ros2_humble` | Tested |
-| Different workspaces, same repo | `~/ws_a/docker_ros_noetic` + `~/ws_b/docker_ros_noetic` | Tested |
+| Different workspace, same repo | `~/ws_a/docker_ros_noetic` + `~/ws_b/docker_ros_noetic` | Tested |
 
-Same repo from different workspaces works because each instance gets a unique service name based on path hash (e.g., `ros_noetic_2a8b` vs `ros_noetic_0529`).
+Same repo from different workspace works because each instance gets a unique service name based on path hash (e.g., `ros_noetic_2a8b` vs `ros_noetic_0529`).
 
 ## How It Works (Technical)
 
-1. **`add.sh`** creates a symlink: `workspaces/<name> → /absolute/path/to/repo`
+1. **`add.sh`** creates a symlink: `workspace/<name> → /absolute/path/to/repo`
 
 2. **`init.sh`** for each workspace:
    - Runs `docker compose --env-file .env config` to fully resolve all `${VAR}` references
@@ -247,10 +247,10 @@ multi_run/
 ├── add.sh                     # Add workspace
 ├── remove.sh                  # Remove workspace
 ├── lib.sh                     # Shared functions
-├── workspaces/                # Symlinks to Docker repos
+├── workspace/                # Symlinks to Docker repos
 ├── Makefile                   # Command entry
 ├── compose.yaml               # CI runner
-├── scripts/
+├── script/
 │   └── ci.sh                  # CI pipeline
 ├── test/
 │   ├── multi_run_spec.bats

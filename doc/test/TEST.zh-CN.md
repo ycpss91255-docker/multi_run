@@ -33,8 +33,8 @@
 
 | 測試項目 | 說明 |
 |----------|------|
-| `add.sh creates symlink in workspaces/` | Symlink 创建 |
-| `remove.sh deletes symlink from workspaces/` | Symlink 删除 |
+| `add.sh creates symlink in workspace/` | Symlink 创建 |
+| `remove.sh deletes symlink from workspace/` | Symlink 删除 |
 
 ### Path ID（2）
 

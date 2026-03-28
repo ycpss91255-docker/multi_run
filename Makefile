@@ -1,10 +1,10 @@
 .PHONY: test lint clean help
 
 test: ## Run full CI (ShellCheck + Bats)
-	./scripts/ci.sh
+	./script/ci.sh
 
 lint: ## Run ShellCheck only
-	./scripts/ci.sh --lint-only
+	./script/ci.sh --lint-only
 
 clean: ## Remove generated files
 	rm -f .multi_compose.yaml .multi_state

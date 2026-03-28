@@ -9,4 +9,4 @@ services:
       - -c
       - |
         apk add --no-cache shellcheck
-        ./scripts/ci.sh --ci
+        ./script/ci.sh --ci

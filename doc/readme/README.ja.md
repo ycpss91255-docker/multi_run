@@ -43,27 +43,27 @@ flowchart LR
         remove["remove.sh"]
     end
 
-    subgraph workspaces["workspaces/"]
+    subgraph workspace["workspace/"]
         ws_a["ros_noetic → ~/ws_a/docker_ros_noetic"]
         ws_b["ros2_humble → ~/ws_b/docker_ros2_humble"]
     end
 
-    add -->|"symlink"| workspaces
+    add -->|"symlink"| workspace
     init -->|"スキャン + 展開"| compose[".multi_compose.yaml"]
     run -->|"docker compose up"| compose
     stop -->|"docker compose down"| compose
     exec -->|"docker compose exec"| compose
     status -->|"docker compose ps"| compose
-    remove -->|"symlink 削除"| workspaces
+    remove -->|"symlink 削除"| workspace
 ```
 
 ## スクリプト
 
 | スクリプト | 説明 |
 |-----------|------|
-| `add.sh <path>` | ワークスペースを追加（`workspaces/` に symlink 作成） |
+| `add.sh <path>` | ワークスペースを追加（`workspace/` に symlink 作成） |
 | `remove.sh <name>` | ワークスペースを削除 |
-| `init.sh [path...]` | workspaces またはパスから `.multi_compose.yaml` を生成 |
+| `init.sh [path...]` | workspace またはパスから `.multi_compose.yaml` を生成 |
 | `run.sh` | 全コンテナ起動 |
 | `stop.sh` | 全コンテナ停止 |
 | `exec.sh <service>` | コンテナに接続 |

@@ -8,7 +8,7 @@ _lib_dir() {
 }
 
 MULTI_ROOT="$(_lib_dir)"
-WORKSPACES_DIR="${WORKSPACES_DIR:-${MULTI_ROOT}/workspaces}"
+WORKSPACE_DIR="${WORKSPACE_DIR:-${MULTI_ROOT}/workspace}"
 export GENERATED_COMPOSE="${MULTI_ROOT}/.multi_compose.yaml"
 export STATE_FILE="${MULTI_ROOT}/.multi_state"
 
@@ -32,8 +32,8 @@ _path_id() {
 
 _get_workspace_paths() {
     local paths=()
-    if [[ -d "${WORKSPACES_DIR}" ]]; then
-        for link in "${WORKSPACES_DIR}"/*; do
+    if [[ -d "${WORKSPACE_DIR}" ]]; then
+        for link in "${WORKSPACE_DIR}"/*; do
             [[ -L "${link}" ]] || continue
             local target
             target="$(readlink -f "${link}")"

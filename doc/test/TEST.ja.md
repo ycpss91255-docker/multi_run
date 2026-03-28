@@ -27,8 +27,8 @@
 
 | テスト項目 | 説明 |
 |------------|------|
-| `add.sh creates symlink in workspaces/` | symlink 作成 |
-| `remove.sh deletes symlink from workspaces/` | symlink 削除 |
+| `add.sh creates symlink in workspace/` | symlink 作成 |
+| `remove.sh deletes symlink from workspace/` | symlink 削除 |
 
 ### パス ID（2）
 

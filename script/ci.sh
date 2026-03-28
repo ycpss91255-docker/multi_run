@@ -34,7 +34,7 @@ _run_via_compose() {
 
 usage() {
     cat >&2 <<'EOF'
-Usage: ./scripts/ci.sh [OPTIONS]
+Usage: ./script/ci.sh [OPTIONS]
 
 Options:
   --ci          Run inside CI container (called by compose)

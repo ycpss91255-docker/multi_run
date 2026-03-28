@@ -1,3 +1,5 @@
 .multi_compose.yaml
 .multi_state
 coverage/
+workspace/*
+!workspace/.gitkeep

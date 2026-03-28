@@ -13,7 +13,7 @@ coverage:
 
 ignore:
   - "test/**/*"
-  - "scripts/**/*"
+  - "script/**/*"
   - ".github/**/*"
 
 comment:
