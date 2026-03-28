@@ -1,0 +1,24 @@
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 0%
+        if_ci_failed: error
+    patch:
+      default:
+        target: 100%
+        threshold: 0%
+        if_ci_failed: error
+
+ignore:
+  - "test/**/*"
+  - "scripts/**/*"
+  - ".github/**/*"
+
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: default
+  require_changes: false
+  require_base: yes
+  require_head: yes

@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# status.sh - Show status of multi_run containers
+
+set -euo pipefail
+
+# shellcheck source=lib.sh
+source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)/lib.sh"
+
+usage() {
+    cat >&2 <<'EOF'
+Usage: ./status.sh [-h]
+
+Show status of multi_run containers.
+
+Options:
+  -h, --help    Show this help
+EOF
+    exit 0
+}
+
+[[ "${1:-}" =~ ^(-h|--help)$ ]] && usage
+
+if [[ ! -f "${GENERATED_COMPOSE}" ]]; then
+    _log "No active session. Run ./init.sh first."
+    exit 0
+fi
+
+_log "Workspaces:"
+while IFS= read -r p; do
+    [[ -z "${p}" ]] && continue
+    _log "  - ${p}"
+done < "${STATE_FILE}"
+
+_log ""
+docker compose -f "${GENERATED_COMPOSE}" ps

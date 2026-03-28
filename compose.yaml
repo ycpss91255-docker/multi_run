@@ -1,0 +1,12 @@
+services:
+  ci:
+    image: bats/bats:latest
+    volumes:
+      - .:/source
+    working_dir: /source
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        apk add --no-cache shellcheck
+        ./scripts/ci.sh --ci
