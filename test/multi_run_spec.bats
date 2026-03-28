@@ -164,6 +164,130 @@ setup() {
     [[ "${result}" == test_image_* ]]
 }
 
+# ════════════════════════════════════════════════════════════════════
+# lib.sh: _log / _error
+# ════════════════════════════════════════════════════════════════════
+
+@test "_log outputs [multi] prefix" {
+    run bash -c "source ${REPO_ROOT}/lib.sh; _log 'hello world'"
+    assert_success
+    assert_output "[multi] hello world"
+}
+
+@test "_error outputs ERROR prefix and exits 1" {
+    run bash -c "source ${REPO_ROOT}/lib.sh; _error 'something broke'"
+    assert_failure
+    assert_output --partial "[multi] ERROR: something broke"
+}
+
+# ════════════════════════════════════════════════════════════════════
+# lib.sh: _get_workspace_paths
+# ════════════════════════════════════════════════════════════════════
+
+@test "_get_workspace_paths returns empty for empty workspace dir" {
+    local ws="${BATS_TEST_TMPDIR}/empty_ws"
+    mkdir -p "${ws}"
+    run bash -c "WORKSPACE_DIR=${ws} source ${REPO_ROOT}/lib.sh; _get_workspace_paths"
+    assert_success
+    assert_output ""
+}
+
+@test "_get_workspace_paths returns symlink targets" {
+    local ws="${BATS_TEST_TMPDIR}/ws_scan"
+    local target="${BATS_TEST_TMPDIR}/fake_target"
+    mkdir -p "${ws}" "${target}"
+    ln -sf "${target}" "${ws}/my_repo"
+    run bash -c "export WORKSPACE_DIR=${ws}; source ${REPO_ROOT}/lib.sh; WORKSPACE_DIR=${ws}; _get_workspace_paths"
+    assert_success
+    assert_output "${target}"
+}
+
+@test "_get_workspace_paths ignores non-symlinks" {
+    local ws="${BATS_TEST_TMPDIR}/ws_mixed"
+    local target="${BATS_TEST_TMPDIR}/real_target"
+    mkdir -p "${ws}" "${target}" "${ws}/not_a_link"
+    ln -sf "${target}" "${ws}/is_a_link"
+    run bash -c "export WORKSPACE_DIR=${ws}; source ${REPO_ROOT}/lib.sh; WORKSPACE_DIR=${ws}; _get_workspace_paths"
+    assert_success
+    assert_output "${target}"
+}
+
+# ════════════════════════════════════════════════════════════════════
+# add.sh: edge cases
+# ════════════════════════════════════════════════════════════════════
+
+@test "add.sh fails without arguments" {
+    run bash "${REPO_ROOT}/add.sh"
+    assert_failure
+    assert_output --partial "ERROR"
+}
+
+@test "add.sh fails for non-existent path" {
+    run bash "${REPO_ROOT}/add.sh" /nonexistent/path
+    assert_failure
+}
+
+@test "add.sh reports already exists for duplicate" {
+    local test_dir="${BATS_TEST_TMPDIR}/dup_repo"
+    mkdir -p "${test_dir}"
+    local ws="${BATS_TEST_TMPDIR}/ws_dup"
+    WORKSPACE_DIR="${ws}" run bash "${REPO_ROOT}/add.sh" "${test_dir}"
+    assert_success
+    WORKSPACE_DIR="${ws}" run bash "${REPO_ROOT}/add.sh" "${test_dir}"
+    assert_success
+    assert_output --partial "Already exists"
+}
+
+# ════════════════════════════════════════════════════════════════════
+# remove.sh: edge cases
+# ════════════════════════════════════════════════════════════════════
+
+@test "remove.sh fails without arguments" {
+    run bash "${REPO_ROOT}/remove.sh"
+    assert_failure
+    assert_output --partial "ERROR"
+}
+
+@test "remove.sh fails for non-existent name" {
+    local ws="${BATS_TEST_TMPDIR}/ws_rm"
+    mkdir -p "${ws}"
+    WORKSPACE_DIR="${ws}" run bash "${REPO_ROOT}/remove.sh" nonexistent
+    assert_failure
+    assert_output --partial "Not found"
+}
+
+# ════════════════════════════════════════════════════════════════════
+# run.sh / stop.sh / status.sh: error without compose
+# ════════════════════════════════════════════════════════════════════
+
+@test "run.sh fails without .multi_compose.yaml" {
+    run bash -c "MULTI_ROOT=${BATS_TEST_TMPDIR} source ${REPO_ROOT}/lib.sh; bash ${REPO_ROOT}/run.sh"
+    assert_failure
+}
+
+@test "stop.sh fails without active session" {
+    run bash -c "MULTI_ROOT=${BATS_TEST_TMPDIR} source ${REPO_ROOT}/lib.sh; bash ${REPO_ROOT}/stop.sh"
+    assert_failure
+}
+
+@test "status.sh shows no session when none active" {
+    run bash -c "MULTI_ROOT=${BATS_TEST_TMPDIR} source ${REPO_ROOT}/lib.sh; bash ${REPO_ROOT}/status.sh"
+    assert_success
+    assert_output --partial "No active session"
+}
+
+# ════════════════════════════════════════════════════════════════════
+# _path_id (continued)
+# ════════════════════════════════════════════════════════════════════
+
+@test "_path_id falls back to dirname when no .env" {
+    local test_dir="${BATS_TEST_TMPDIR}/no_env_repo"
+    mkdir -p "${test_dir}"
+    run bash -c "source ${REPO_ROOT}/lib.sh; _path_id ${test_dir}"
+    assert_success
+    assert_output --regexp "^no_env_repo_[0-9a-f]{4}$"
+}
+
 @test "_path_id generates different ID for same repo different ws" {
     local dir_a="${BATS_TEST_TMPDIR}/ws_a/docker_ros"
     local dir_b="${BATS_TEST_TMPDIR}/ws_b/docker_ros"

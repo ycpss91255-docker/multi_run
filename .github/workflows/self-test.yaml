@@ -14,8 +14,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Run CI (ShellCheck + Bats)
+      - name: Run CI (ShellCheck + Bats + Kcov)
         run: ./script/ci.sh
+
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ./coverage
+          fail_ci_if_error: false
 
   release:
     needs: test
@@ -30,5 +38,6 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          body_path: doc/changelog/CHANGELOG.md
           generate_release_notes: true
           prerelease: ${{ contains(github.ref_name, '-') }}

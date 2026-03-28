@@ -1,10 +1,18 @@
 #!/usr/bin/env bash
-# ci.sh - Run CI pipeline (ShellCheck + Bats)
+# ci.sh - Run CI pipeline (ShellCheck + Bats + Kcov)
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 REPO_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd -P)"
+
+_install_deps() {
+    if ! command -v bats >/dev/null 2>&1; then
+        apt-get update -qq
+        apt-get install -y --no-install-recommends \
+            bats bats-support bats-assert shellcheck
+    fi
+}
 
 _run_shellcheck() {
     echo "--- Running ShellCheck ---"
@@ -17,11 +25,20 @@ _run_tests() {
     bats "${REPO_ROOT}/test/"
 }
 
-_install_deps() {
-    if ! command -v bats >/dev/null 2>&1; then
-        apt-get update -qq
-        apt-get install -y --no-install-recommends \
-            bats bats-support bats-assert shellcheck
+_run_coverage() {
+    echo "--- Running Tests with Kcov Coverage ---"
+    kcov \
+        --include-path="${REPO_ROOT}" \
+        --exclude-path="${REPO_ROOT}/test/,${REPO_ROOT}/script/,${REPO_ROOT}/.github/" \
+        "${REPO_ROOT}/coverage" \
+        bats "${REPO_ROOT}/test/"
+}
+
+_fix_permissions() {
+    local uid="${HOST_UID:-}"
+    local gid="${HOST_GID:-}"
+    if [[ -n "${uid}" && -n "${gid}" && -d "${REPO_ROOT}/coverage" ]]; then
+        chown -R "${uid}:${gid}" "${REPO_ROOT}/coverage"
     fi
 }
 
@@ -56,7 +73,13 @@ main() {
     done
 
     case "${mode}" in
-        ci) _install_deps; _run_shellcheck; _run_tests ;;
+        ci)
+            _install_deps
+            _run_shellcheck
+            _run_coverage
+            _fix_permissions
+            echo "Coverage report: ${REPO_ROOT}/coverage/index.html"
+            ;;
         lint) _run_shellcheck ;;
         compose) _run_via_compose ;;
     esac
