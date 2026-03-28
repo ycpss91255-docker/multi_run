@@ -11,6 +11,24 @@ Launch multiple Docker containers from different workspace simultaneously.
 
 **[English](README.md)** | **[繁體中文](doc/readme/README.zh-TW.md)** | **[简体中文](doc/readme/README.zh-CN.md)** | **[日本語](doc/readme/README.ja.md)**
 
+---
+
+## Table of Contents
+
+- [TL;DR](#tldr)
+- [Overview](#overview)
+- [Prerequisites](#prerequisites)
+- [Getting Started](#getting-started)
+- [Two Modes](#two-modes)
+- [Architecture](#architecture)
+- [Scripts Reference](#scripts-reference)
+- [Supported Scenarios](#supported-scenarios)
+- [How It Works (Technical)](#how-it-works-technical)
+- [Running Tests](#running-tests)
+- [Directory Structure](#directory-structure)
+
+---
+
 ## TL;DR
 
 ```bash
@@ -267,10 +285,3 @@ multi_run/
 └── README.md
 ```
 
-## Changelog
-
-See [CHANGELOG.md](doc/changelog/CHANGELOG.md).
-
-## Tests
-
-See [TEST.md](doc/test/TEST.md).
