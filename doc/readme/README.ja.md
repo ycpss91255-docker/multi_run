@@ -73,6 +73,3 @@ flowchart LR
 
 [TEST.md](../test/TEST.md) を参照。
 
-## 変更履歴
-
-[CHANGELOG.md](../changelog/CHANGELOG.md) を参照。

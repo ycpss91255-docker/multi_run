@@ -267,10 +267,6 @@ multi_run/
 └── README.md
 ```
 
-## 變更記錄
-
-詳見 [CHANGELOG.md](../changelog/CHANGELOG.md)。
-
 ## 測試
 
 詳見 [TEST.md](../test/TEST.md)。

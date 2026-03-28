@@ -73,6 +73,3 @@ flowchart LR
 
 详见 [TEST.md](../test/TEST.md)。
 
-## 变更记录
-
-详见 [CHANGELOG.md](../changelog/CHANGELOG.md)。
