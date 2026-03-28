@@ -14,123 +14,224 @@ Launch multiple Docker containers from different workspaces simultaneously.
 ## TL;DR
 
 ```bash
-# Add workspaces
 ./add.sh ~/robot_ws/docker_ros_noetic
 ./add.sh ~/nav_ws/docker_ros2_humble
-
-# Init + Start
-./init.sh && ./run.sh
-
-# Stop
-./stop.sh
+./init.sh && ./run.sh       # start all
+./stop.sh                   # stop all
 ```
 
 ## Overview
 
-Manages multiple [docker_template](https://github.com/ycpss91255-docker/docker_template)-based containers as a single unit. Each workspace's `compose.yaml` is resolved and merged into one compose file with unique service names, enabling simultaneous operation without conflicts.
+When working with multiple ROS workspaces or Docker environments, you often need to run several containers at the same time (e.g., a ROS Noetic container for one robot and a ROS 2 Humble container for another). Normally you'd have to open multiple terminals, `cd` into each repo, and run `./run.sh` manually.
 
-### Architecture
+**multi_run** solves this by managing all your Docker workspaces in one place. It merges multiple `compose.yaml` files into a single file with unique service names, so you can start, stop, and manage all containers with simple commands.
+
+Works with any [docker_template](https://github.com/ycpss91255-docker/docker_template)-based repo.
+
+## Prerequisites
+
+- Docker + Docker Compose v2
+- Python 3 with `pyyaml` (`pip install pyyaml`)
+- Docker repos built with [docker_template](https://github.com/ycpss91255-docker/docker_template) (each must have `compose.yaml` + `.env`)
+
+## Getting Started
+
+### 1. Clone multi_run
+
+```bash
+cd ~/Desktop/docker   # or wherever you keep your Docker repos
+git clone git@github.com:ycpss91255-docker/multi_run.git
+cd multi_run
+```
+
+### 2. Register your workspaces
+
+Suppose you have two workspaces:
+```
+~/robot_a_ws/docker_ros_noetic/     ← ROS 1 Noetic environment
+~/robot_b_ws/docker_ros2_humble/    ← ROS 2 Humble environment
+```
+
+Register them:
+```bash
+./add.sh ~/robot_a_ws/docker_ros_noetic
+# [multi] Added: docker_ros_noetic → /home/user/robot_a_ws/docker_ros_noetic
+
+./add.sh ~/robot_b_ws/docker_ros2_humble
+# [multi] Added: docker_ros2_humble → /home/user/robot_b_ws/docker_ros2_humble
+```
+
+This creates symlinks in `workspaces/`:
+```
+workspaces/
+├── docker_ros_noetic → ~/robot_a_ws/docker_ros_noetic
+└── docker_ros2_humble → ~/robot_b_ws/docker_ros2_humble
+```
+
+### 3. Initialize (generate merged compose)
+
+```bash
+./init.sh
+# [multi] Added: docker_ros_noetic → ros_noetic_2a8b
+# [multi] Added: docker_ros2_humble → ros2_humble_3c9d
+# [multi] Generated: .multi_compose.yaml
+# [multi] Run ./run.sh to start.
+```
+
+What happens:
+1. Scans `workspaces/` for all symlinks
+2. Runs `docker compose config` on each repo to resolve all `.env` variables
+3. Renames `devel` service to a unique ID (e.g., `ros_noetic_2a8b`) using image name + path hash
+4. Merges everything into `.multi_compose.yaml`
+
+### 4. Start all containers
+
+```bash
+./run.sh
+# [multi] Starting containers...
+#  Container multi_run-ros_noetic_2a8b-1 Started
+#  Container multi_run-ros2_humble_3c9d-1 Started
+# [multi] All containers started.
+```
+
+### 5. Check status
+
+```bash
+./status.sh
+# [multi] Active workspaces:
+# [multi]   - /home/user/robot_a_ws/docker_ros_noetic
+# [multi]   - /home/user/robot_b_ws/docker_ros2_humble
+#
+# NAME                              IMAGE                       STATUS
+# multi_run-ros_noetic_2a8b-1       user/ros_noetic:devel       Up 30 seconds
+# multi_run-ros2_humble_3c9d-1      user/ros2_humble:devel      Up 30 seconds
+```
+
+### 6. Enter a container
+
+Use the service name from `./status.sh`:
+```bash
+./exec.sh ros_noetic_2a8b          # enter with bash
+./exec.sh ros_noetic_2a8b htop     # run a command
+```
+
+### 7. Stop all
+
+```bash
+./stop.sh
+# [multi] Stopping containers...
+#  Container multi_run-ros_noetic_2a8b-1 Stopped
+#  Container multi_run-ros2_humble_3c9d-1 Stopped
+# [multi] All containers stopped.
+```
+
+## Two Modes
+
+### Mode 1: Workspace symlinks (recommended for daily use)
+
+Register workspaces once, then `./init.sh && ./run.sh` every time.
+
+```bash
+# One-time setup
+./add.sh ~/robot_a_ws/docker_ros_noetic
+./add.sh ~/robot_b_ws/docker_ros2_humble
+
+# Daily workflow
+./init.sh && ./run.sh    # start
+./stop.sh                # stop
+```
+
+**Advantage**: Workspaces are saved. No need to type paths every time.
+
+### Mode 2: Direct paths (for one-off use)
+
+Specify paths directly without saving to `workspaces/`.
+
+```bash
+./init.sh ~/robot_a_ws/docker_ros_noetic ~/robot_b_ws/docker_ros2_humble
+./run.sh
+```
+
+**Advantage**: Quick and temporary. Does not modify `workspaces/`.
+
+## Architecture
 
 ```mermaid
-flowchart LR
-    subgraph multi_run
-        add["add.sh"]
-        init["init.sh"]
-        run["run.sh"]
-        stop["stop.sh"]
-        exec["exec.sh"]
-        status["status.sh"]
-        remove["remove.sh"]
+flowchart TD
+    subgraph "Setup (one-time)"
+        add["./add.sh path"]
+        ws["workspaces/<br/>symlinks"]
+        add -->|"create symlink"| ws
     end
 
-    subgraph workspaces["workspaces/"]
-        ws_a["ros_noetic → ~/ws_a/docker_ros_noetic"]
-        ws_b["ros2_humble → ~/ws_b/docker_ros2_humble"]
+    subgraph "Daily workflow"
+        init["./init.sh"]
+        compose[".multi_compose.yaml<br/>(auto-generated)"]
+        run["./run.sh"]
+        status["./status.sh"]
+        exec["./exec.sh service"]
+        stop["./stop.sh"]
+
+        ws -->|"scan"| init
+        init -->|"resolve + merge"| compose
+        compose --> run
+        compose --> status
+        compose --> exec
+        compose --> stop
     end
 
-    add -->|"symlink"| workspaces
-    init -->|"scan + resolve"| compose[".multi_compose.yaml"]
-    run -->|"docker compose up"| compose
-    stop -->|"docker compose down"| compose
-    exec -->|"docker compose exec"| compose
-    status -->|"docker compose ps"| compose
-    remove -->|"rm symlink"| workspaces
+    subgraph "Docker repos"
+        repo_a["~/ws_a/docker_ros_noetic<br/>compose.yaml + .env"]
+        repo_b["~/ws_b/docker_ros2_humble<br/>compose.yaml + .env"]
+    end
+
+    init -.->|"docker compose config"| repo_a
+    init -.->|"docker compose config"| repo_b
 ```
 
-## Scripts
+## Scripts Reference
 
-| Script | Description |
-|--------|-------------|
-| `add.sh <path>` | Add a workspace (creates symlink in `workspaces/`) |
-| `remove.sh <name>` | Remove a workspace |
-| `init.sh [path...]` | Generate `.multi_compose.yaml` from workspaces or given paths |
-| `run.sh` | Start all containers (`docker compose up -d`) |
-| `stop.sh` | Stop all containers (`docker compose down`) |
-| `exec.sh <service>` | Exec into a container |
-| `status.sh` | Show container status |
+| Script | Usage | Description |
+|--------|-------|-------------|
+| `add.sh <path>` | `./add.sh ~/ws/docker_ros_noetic` | Register a workspace (symlink in `workspaces/`) |
+| `remove.sh <name>` | `./remove.sh docker_ros_noetic` | Unregister a workspace |
+| `init.sh [path...]` | `./init.sh` or `./init.sh path1 path2` | Generate `.multi_compose.yaml` |
+| `run.sh` | `./run.sh` | Start all containers |
+| `stop.sh` | `./stop.sh` | Stop and remove all containers |
+| `exec.sh <svc> [cmd]` | `./exec.sh ros_noetic_2a8b` | Enter a container (default: bash) |
+| `status.sh` | `./status.sh` | Show running containers |
 
-## Usage
-
-### Mode 1: Workspace symlinks
-
-```bash
-# Add workspaces
-./add.sh ~/robot_ws/docker_ros_noetic
-./add.sh ~/nav_ws/docker_ros2_humble
-
-# Generate compose + start
-./init.sh
-./run.sh
-
-# Check status
-./status.sh
-
-# Enter a container
-./exec.sh ros_noetic_2a8b
-
-# Stop all
-./stop.sh
-```
-
-### Mode 2: Direct paths
-
-```bash
-# Init with paths (skips workspaces/)
-./init.sh ~/robot_ws/docker_ros_noetic ~/nav_ws/docker_ros2_humble
-./run.sh
-```
-
-### Managing workspaces
-
-```bash
-# List current workspaces
-ls -la workspaces/
-
-# Remove a workspace
-./remove.sh ros_noetic
-```
+All scripts support `-h` / `--help`.
 
 ## Supported Scenarios
 
-| Scenario | Description | Status |
-|----------|-------------|--------|
-| Different ws, different repos | `~/ws_a/docker_ros_noetic` + `~/ws_b/docker_ros2_humble` | Tested |
-| Same ws, different repos | `~/ws/osrf_ros_noetic` + `~/ws/osrf_ros2_humble` | Tested |
-| Different ws, same repo | `~/ws_a/docker_ros_noetic` + `~/ws_b/docker_ros_noetic` | Tested |
+| Scenario | Example | Status |
+|----------|---------|--------|
+| Different workspaces, different repos | `~/ws_a/docker_ros_noetic` + `~/ws_b/docker_ros2_humble` | Tested |
+| Same workspace, different repos | `~/ws/osrf_ros_noetic` + `~/ws/osrf_ros2_humble` | Tested |
+| Different workspaces, same repo | `~/ws_a/docker_ros_noetic` + `~/ws_b/docker_ros_noetic` | Tested |
 
-## How It Works
+Same repo from different workspaces works because each instance gets a unique service name based on path hash (e.g., `ros_noetic_2a8b` vs `ros_noetic_0529`).
 
-1. `init.sh` scans `workspaces/` for symlinks (or takes paths as arguments)
-2. For each workspace, runs `docker compose config` to resolve all variables
-3. Renames the `devel` service to a unique ID (`{IMAGE_NAME}_{path_hash}`)
-4. Merges all resolved services into `.multi_compose.yaml`
-5. `run.sh` / `stop.sh` / `exec.sh` / `status.sh` operate on this file
+## How It Works (Technical)
+
+1. **`add.sh`** creates a symlink: `workspaces/<name> → /absolute/path/to/repo`
+
+2. **`init.sh`** for each workspace:
+   - Runs `docker compose --env-file .env config` to fully resolve all `${VAR}` references
+   - Uses Python to extract the `devel` service, remove `container_name`, and rename to `{IMAGE_NAME}_{hash}`
+   - Appends to `.multi_compose.yaml`
+
+3. **`run.sh`** / **`stop.sh`** / **`exec.sh`** / **`status.sh`** simply call `docker compose -f .multi_compose.yaml <command>`
+
+The path hash (`_2a8b`) is the first 4 characters of the MD5 hash of the absolute path, ensuring same-repo-different-workspace instances get different names.
 
 ## Running Tests
 
 ```bash
 make test     # ShellCheck + Bats (via docker compose)
 make lint     # ShellCheck only
+make clean    # Remove generated files
 make help     # Show all targets
 ```
 
