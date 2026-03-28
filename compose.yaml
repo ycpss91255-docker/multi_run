@@ -1,6 +1,7 @@
 services:
   ci:
     image: kcov/kcov
+    privileged: true
     security_opt:
       - seccomp=unconfined
     volumes:

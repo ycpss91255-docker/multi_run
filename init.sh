@@ -63,11 +63,9 @@ for p in "${paths[@]}"; do
         fi
     fi
 
-    instance_id
     instance_id="$(_path_id "${p}")"
 
     # Resolve compose
-    resolved
     resolved=$(cd "${p}" && docker compose --env-file .env config 2>/dev/null) \
         || _error "Failed to resolve compose in ${p}"
 

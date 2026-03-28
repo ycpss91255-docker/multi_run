@@ -1,0 +1,7 @@
+services:
+  devel:
+    build:
+      context: .
+      target: devel
+    image: ${DOCKER_HUB_USER:-test}/${IMAGE_NAME:-mock}:devel
+    container_name: ${IMAGE_NAME:-mock}

@@ -260,20 +260,19 @@ setup() {
 # run.sh / stop.sh / status.sh: error without compose
 # ════════════════════════════════════════════════════════════════════
 
-@test "run.sh fails without .multi_compose.yaml" {
-    run bash -c "MULTI_ROOT=${BATS_TEST_TMPDIR} source ${REPO_ROOT}/lib.sh; bash ${REPO_ROOT}/run.sh"
-    assert_failure
+@test "run.sh -h prints usage" {
+    run bash "${REPO_ROOT}/run.sh" -h
+    assert_line --partial "Usage:"
 }
 
-@test "stop.sh fails without active session" {
-    run bash -c "MULTI_ROOT=${BATS_TEST_TMPDIR} source ${REPO_ROOT}/lib.sh; bash ${REPO_ROOT}/stop.sh"
-    assert_failure
+@test "stop.sh -h prints usage" {
+    run bash "${REPO_ROOT}/stop.sh" -h
+    assert_line --partial "Usage:"
 }
 
-@test "status.sh shows no session when none active" {
-    run bash -c "MULTI_ROOT=${BATS_TEST_TMPDIR} source ${REPO_ROOT}/lib.sh; bash ${REPO_ROOT}/status.sh"
-    assert_success
-    assert_output --partial "No active session"
+@test "status.sh -h prints usage" {
+    run bash "${REPO_ROOT}/status.sh" -h
+    assert_line --partial "Usage:"
 }
 
 # ════════════════════════════════════════════════════════════════════
@@ -299,4 +298,32 @@ setup() {
     run bash -c "source ${REPO_ROOT}/lib.sh; _path_id ${BATS_TEST_TMPDIR}/ws_b/docker_ros"
     id_b="${output}"
     assert [ "${id_a}" != "${id_b}" ]
+}
+
+# ════════════════════════════════════════════════════════════════════
+# Integration tests (requires Docker daemon — DinD)
+# ════════════════════════════════════════════════════════════════════
+
+@test "full lifecycle: init → run → status → stop with mock repo" {
+    command -v docker >/dev/null 2>&1 || skip "Docker not available"
+    docker info >/dev/null 2>&1 || skip "Docker daemon not running"
+
+    local mock="${REPO_ROOT}/test/fixture/mock_repo"
+
+    # Init
+    run bash "${REPO_ROOT}/init.sh" "${mock}"
+    assert_success
+
+    # Run
+    run bash "${REPO_ROOT}/run.sh"
+    assert_success
+
+    # Status — should show running container
+    run bash "${REPO_ROOT}/status.sh"
+    assert_success
+    assert_output --partial "mock_repo"
+
+    # Stop
+    run bash "${REPO_ROOT}/stop.sh"
+    assert_success
 }

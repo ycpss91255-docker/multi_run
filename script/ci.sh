@@ -10,7 +10,30 @@ _install_deps() {
     if ! command -v bats >/dev/null 2>&1; then
         apt-get update -qq
         apt-get install -y --no-install-recommends \
-            bats bats-support bats-assert shellcheck
+            bats bats-support bats-assert shellcheck \
+            docker.io python3-yaml \
+            ca-certificates iptables curl
+        # Install docker compose plugin
+        mkdir -p /usr/local/lib/docker/cli-plugins
+        local compose_ver="v2.32.4"
+        curl -fsSL "https://github.com/docker/compose/releases/download/${compose_ver}/docker-compose-linux-$(uname -m)" \
+            -o /usr/local/lib/docker/cli-plugins/docker-compose
+        chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+    fi
+}
+
+_start_dockerd() {
+    if ! docker info >/dev/null 2>&1; then
+        echo "--- Starting Docker daemon (DinD) ---"
+        dockerd --storage-driver=vfs > /var/log/dockerd.log 2>&1 &
+        # Wait for daemon
+        local retries=30
+        while ! docker info >/dev/null 2>&1 && [ $retries -gt 0 ]; do
+            sleep 1
+            retries=$((retries - 1))
+        done
+        docker info >/dev/null 2>&1 || { cat /var/log/dockerd.log; return 1; }
+        echo "Docker daemon ready."
     fi
 }
 
@@ -75,6 +98,7 @@ main() {
     case "${mode}" in
         ci)
             _install_deps
+            _start_dockerd
             _run_shellcheck
             _run_coverage
             _fix_permissions
