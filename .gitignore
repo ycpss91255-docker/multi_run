@@ -5,3 +5,5 @@ workspace/*
 !workspace/.gitkeep
 .coverage
 .coverage
+script/workspace/
+script/.multi_*
