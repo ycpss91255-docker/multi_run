@@ -320,16 +320,15 @@ setup() {
     docker info >/dev/null 2>&1 || skip "Docker daemon not running"
 
     local mock="${REPO_ROOT}/test/fixture/mock_repo"
+    local test_ws="${BATS_TEST_TMPDIR}/ws_scan"
+    mkdir -p "${test_ws}"
 
-    # Clean workspace
-    find "${REPO_ROOT}/workspace/" -type l -delete 2>/dev/null || true
-
-    # Add workspace via init.sh --add
-    run bash "${REPO_ROOT}/init.sh" --add "${mock}"
+    # Add workspace via init.sh --add (using isolated workspace dir)
+    run env WORKSPACE_DIR="${test_ws}" bash "${REPO_ROOT}/init.sh" --add "${mock}"
     assert_success
 
     # Init without args — should scan workspace/
-    run bash "${REPO_ROOT}/init.sh"
+    run env WORKSPACE_DIR="${test_ws}" bash "${REPO_ROOT}/init.sh"
     assert_success
     assert_output --partial "Generated"
 
@@ -340,9 +339,6 @@ setup() {
     # Stop
     run bash "${REPO_ROOT}/stop.sh"
     assert_success
-
-    # Cleanup
-    find "${REPO_ROOT}/workspace/" -type l -delete 2>/dev/null || true
 }
 
 @test "exec.sh fails without arguments" {
@@ -396,8 +392,11 @@ setup() {
 }
 
 @test "init.sh --list shows registered workspace" {
-    run bash -c "ln -sf /tmp /source/workspace/test_list_link && bash /source/init.sh --list; exit 0"
-    assert_success
+    local test_ws="${BATS_TEST_TMPDIR}/ws_list"
+    mkdir -p "${test_ws}"
+    ln -sf /tmp "${test_ws}/test_list_link"
+    run env WORKSPACE_DIR="${test_ws}" bash "${REPO_ROOT}/init.sh" --list
+    # exit 0 because list may return non-zero from glob
     assert_output --partial "test_list_link"
 }
 
