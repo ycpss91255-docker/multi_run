@@ -14,23 +14,21 @@ import yaml
 import io
 
 
-def main():
-    if len(sys.argv) < 2:
-        print("Usage: resolve_compose.py <service_id>", file=sys.stderr)
-        sys.exit(1)
+def resolve(input_text, service_id):
+    """Extract devel service, rename to service_id, return indented YAML.
 
-    service_id = sys.argv[1]
-
-    data = yaml.safe_load(sys.stdin)
+    Returns:
+        tuple: (output_text, error_text, exit_code)
+    """
+    data = yaml.safe_load(input_text)
     if data is None:
-        print("Error: empty input", file=sys.stderr)
-        sys.exit(1)
+        return ("", "Error: empty input", 1)
 
     services = data.get("services", {})
 
     if "devel" not in services:
         # No devel service — skip silently
-        sys.exit(0)
+        return ("", "", 0)
 
     svc = services["devel"]
     svc.pop("container_name", None)
@@ -38,9 +36,25 @@ def main():
     output = {service_id: svc}
     stream = io.StringIO()
     yaml.dump(output, stream, default_flow_style=False, allow_unicode=True)
-    for line in stream.getvalue().splitlines():
-        print(f"  {line}")
+    lines = [f"  {line}" for line in stream.getvalue().splitlines()]
+    return ("\n".join(lines) + "\n", "", 0)
 
 
-if __name__ == "__main__":
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: resolve_compose.py <service_id>", file=sys.stderr)
+        sys.exit(1)
+
+    service_id = sys.argv[1]
+    input_text = sys.stdin.read()
+
+    stdout, stderr, code = resolve(input_text, service_id)
+    if stderr:
+        print(stderr, file=sys.stderr)
+    if stdout:
+        print(stdout, end="")
+    sys.exit(code)
+
+
+if __name__ == "__main__":  # pragma: no cover
     main()

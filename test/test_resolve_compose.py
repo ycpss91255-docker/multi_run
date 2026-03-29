@@ -1,22 +1,12 @@
 #!/usr/bin/env python3
 """Tests for resolve_compose.py"""
 
-import subprocess
 import sys
 import os
 
-SCRIPT = os.path.join(os.path.dirname(__file__), "..", "script", "resolve_compose.py")
-
-
-def run_resolve(input_yaml, service_id="test_svc"):
-    """Helper to run resolve_compose.py with given input."""
-    result = subprocess.run(
-        [sys.executable, SCRIPT, service_id],
-        input=input_yaml,
-        capture_output=True,
-        text=True,
-    )
-    return result
+# Add script/ to path so we can import resolve_compose
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "script"))
+from resolve_compose import resolve  # noqa: E402
 
 
 def test_extracts_devel_service():
@@ -27,10 +17,10 @@ services:
     environment:
       FOO: bar
 """
-    result = run_resolve(yaml_in, "my_repo_1234")
-    assert result.returncode == 0
-    assert "my_repo_1234:" in result.stdout
-    assert "image: test/repo:devel" in result.stdout
+    stdout, stderr, code = resolve(yaml_in, "my_repo_1234")
+    assert code == 0
+    assert "my_repo_1234:" in stdout
+    assert "image: test/repo:devel" in stdout
 
 
 def test_removes_container_name():
@@ -40,9 +30,9 @@ services:
     image: test/repo:devel
     container_name: my_container
 """
-    result = run_resolve(yaml_in, "svc_id")
-    assert result.returncode == 0
-    assert "container_name" not in result.stdout
+    stdout, stderr, code = resolve(yaml_in, "svc_id")
+    assert code == 0
+    assert "container_name" not in stdout
 
 
 def test_skips_when_no_devel_service():
@@ -51,26 +41,15 @@ services:
   web:
     image: nginx
 """
-    result = run_resolve(yaml_in, "svc_id")
-    assert result.returncode == 0
-    assert result.stdout == ""
-
-
-def test_fails_without_service_id():
-    result = subprocess.run(
-        [sys.executable, SCRIPT],
-        input="services:\n  devel:\n    image: test\n",
-        capture_output=True,
-        text=True,
-    )
-    assert result.returncode == 1
-    assert "Usage" in result.stderr
+    stdout, stderr, code = resolve(yaml_in, "svc_id")
+    assert code == 0
+    assert stdout == ""
 
 
 def test_fails_on_empty_input():
-    result = run_resolve("", "svc_id")
-    assert result.returncode == 1
-    assert "empty" in result.stderr.lower()
+    stdout, stderr, code = resolve("", "svc_id")
+    assert code == 1
+    assert "empty" in stderr.lower()
 
 
 def test_output_is_indented():
@@ -79,10 +58,9 @@ services:
   devel:
     image: test/repo:devel
 """
-    result = run_resolve(yaml_in, "svc_id")
-    assert result.returncode == 0
-    # All lines should be indented with 2 spaces
-    for line in result.stdout.strip().splitlines()[1:]:  # skip service name line
+    stdout, stderr, code = resolve(yaml_in, "svc_id")
+    assert code == 0
+    for line in stdout.strip().splitlines()[1:]:
         assert line.startswith("  "), f"Not indented: {line}"
 
 
@@ -96,10 +74,95 @@ services:
     volumes:
       - /tmp:/tmp
 """
-    result = run_resolve(yaml_in, "svc_id")
-    assert result.returncode == 0
-    assert "DISPLAY" in result.stdout
-    assert "/tmp:/tmp" in result.stdout
+    stdout, stderr, code = resolve(yaml_in, "svc_id")
+    assert code == 0
+    assert "DISPLAY" in stdout
+    assert "/tmp:/tmp" in stdout
+
+
+def test_main_no_args():
+    """main() exits 1 with usage when no service_id provided."""
+    from resolve_compose import main
+    from io import StringIO
+
+    old_argv = sys.argv
+    old_stderr = sys.stderr
+    sys.argv = ["resolve_compose.py"]
+    sys.stderr = StringIO()
+    try:
+        main()
+    except SystemExit as e:
+        assert e.code == 1
+    output = sys.stderr.getvalue()
+    assert "Usage" in output
+    sys.argv = old_argv
+    sys.stderr = old_stderr
+
+
+def test_main_normal():
+    """main() prints resolved YAML to stdout."""
+    from resolve_compose import main
+    from io import StringIO
+
+    old_argv = sys.argv
+    old_stdin = sys.stdin
+    old_stdout = sys.stdout
+    sys.argv = ["resolve_compose.py", "test_svc"]
+    sys.stdin = StringIO("services:\n  devel:\n    image: test:devel\n")
+    sys.stdout = StringIO()
+    try:
+        main()
+    except SystemExit as e:
+        assert e.code == 0
+    output = sys.stdout.getvalue()
+    assert "test_svc:" in output
+    sys.argv = old_argv
+    sys.stdin = old_stdin
+    sys.stdout = old_stdout
+
+
+def test_main_error():
+    """main() prints error to stderr on empty input."""
+    from resolve_compose import main
+    from io import StringIO
+
+    old_argv = sys.argv
+    old_stdin = sys.stdin
+    old_stderr = sys.stderr
+    sys.argv = ["resolve_compose.py", "svc"]
+    sys.stdin = StringIO("")
+    sys.stderr = StringIO()
+    try:
+        main()
+    except SystemExit as e:
+        assert e.code == 1
+    output = sys.stderr.getvalue()
+    assert "empty" in output.lower()
+    sys.argv = old_argv
+    sys.stdin = old_stdin
+    sys.stderr = old_stderr
+
+
+def test_main_no_devel():
+    """main() exits 0 silently when no devel service."""
+    from resolve_compose import main
+    from io import StringIO
+
+    old_argv = sys.argv
+    old_stdin = sys.stdin
+    old_stdout = sys.stdout
+    sys.argv = ["resolve_compose.py", "svc"]
+    sys.stdin = StringIO("services:\n  web:\n    image: nginx\n")
+    sys.stdout = StringIO()
+    try:
+        main()
+    except SystemExit as e:
+        assert e.code == 0
+    output = sys.stdout.getvalue()
+    assert output == ""
+    sys.argv = old_argv
+    sys.stdin = old_stdin
+    sys.stdout = old_stdout
 
 
 if __name__ == "__main__":
