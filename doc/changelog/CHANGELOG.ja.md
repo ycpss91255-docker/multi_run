@@ -24,6 +24,10 @@
 ### 修正
 - setup.sh パスを `template/script/docker/setup.sh` に変更（旧 `docker_template/setup.sh`）、template 形式の repo をサポート
 
+### テスト
+- `template` を git subtree（v0.8.1）として追加し、テストで実際の template 形式のフィクスチャをスキャフォールド可能に
+- 偽の `mock_with_setup` フィクスチャを削除し、DinD 内で `template/init.sh` を実行して実リポ構造を生成する動的 E2E テストに置換
+
 ### テスト済みシナリオ
 - 異なるワークスペース、異なるリポ
 - 同ワークスペース、異なるリポ

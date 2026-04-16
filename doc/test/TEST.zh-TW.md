@@ -79,7 +79,7 @@
 | `workspace scan mode: add -> init (no args) -> run -> stop` | 端到端 workspace 模式 |
 | `init.sh fails with invalid workspace path` | 路徑不存在時報錯 |
 | `init.sh fails for repo without .env and no setup.sh` | .env 缺失時報錯 |
-| `init.sh generates .env via setup.sh when missing` | 透過 template 自動產生 .env |
+| `e2e: init.sh uses real template setup.sh to generate .env` | 用真實 `template/init.sh` scaffold 出一個 repo，驗證 multi_run 會呼叫 `template/script/docker/setup.sh` 自動產生 `.env` |
 | `status.sh shows no active session when compose file missing` | 無 session 時正常處理 |
 | `init.sh --list shows registered workspace` | 列出含 symlink 的工作區 |
 

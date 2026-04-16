@@ -79,7 +79,7 @@
 | `workspace scan mode: add -> init (no args) -> run -> stop` | End-to-end workspace mode |
 | `init.sh fails with invalid workspace path` | Error on non-existent path |
 | `init.sh fails for repo without .env and no setup.sh` | Error when .env missing |
-| `init.sh generates .env via setup.sh when missing` | Auto-generate .env via template |
+| `e2e: init.sh uses real template setup.sh to generate .env` | Scaffolds a repo with real `template/init.sh`, then verifies multi_run calls `template/script/docker/setup.sh` to auto-generate `.env` |
 | `status.sh shows no active session when compose file missing` | Graceful no-session |
 | `init.sh --list shows registered workspace` | Lists workspace with symlinks |
 

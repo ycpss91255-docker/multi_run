@@ -79,7 +79,7 @@
 | `workspace scan mode: add -> init (no args) -> run -> stop` | 端到端 workspace 模式 |
 | `init.sh fails with invalid workspace path` | 路径不存在时报错 |
 | `init.sh fails for repo without .env and no setup.sh` | .env 缺失时报错 |
-| `init.sh generates .env via setup.sh when missing` | 通过 template 自动生成 .env |
+| `e2e: init.sh uses real template setup.sh to generate .env` | 用真实 `template/init.sh` scaffold 出一个 repo，验证 multi_run 会调用 `template/script/docker/setup.sh` 自动生成 `.env` |
 | `status.sh shows no active session when compose file missing` | 无 session 时正常处理 |
 | `init.sh --list shows registered workspace` | 列出含 symlink 的工作区 |
 
