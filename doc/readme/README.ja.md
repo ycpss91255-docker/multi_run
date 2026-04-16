@@ -26,8 +26,8 @@
 
 ```bash
 # ワークスペースを追加
-./add.sh ~/robot_ws/docker_ros_noetic
-./add.sh ~/nav_ws/docker_ros2_humble
+./init.sh --add ~/robot_ws/docker_ros_noetic
+./init.sh --add ~/nav_ws/docker_ros2_humble
 
 # 初期化 + 起動
 ./init.sh && ./run.sh
@@ -45,13 +45,11 @@
 ```mermaid
 flowchart LR
     subgraph multi_run
-        add["add.sh"]
         init["init.sh"]
         run["run.sh"]
         stop["stop.sh"]
         exec["exec.sh"]
         status["status.sh"]
-        remove["remove.sh"]
     end
 
     subgraph workspace["workspace/"]
@@ -59,21 +57,21 @@ flowchart LR
         ws_b["ros2_humble → ~/ws_b/docker_ros2_humble"]
     end
 
-    add -->|"symlink"| workspace
+    init -->|"--add symlink"| workspace
     init -->|"スキャン + 展開"| compose[".multi_compose.yaml"]
     run -->|"docker compose up"| compose
     stop -->|"docker compose down"| compose
     exec -->|"docker compose exec"| compose
     status -->|"docker compose ps"| compose
-    remove -->|"symlink 削除"| workspace
 ```
 
 ## スクリプト
 
 | スクリプト | 説明 |
 |-----------|------|
-| `add.sh <path>` | ワークスペースを追加（`workspace/` に symlink 作成） |
-| `remove.sh <name>` | ワークスペースを削除 |
+| `init.sh --add <path>` | ワークスペースを追加（`workspace/` に symlink 作成） |
+| `init.sh --remove <name>` | ワークスペースを削除 |
+| `init.sh --list` | 登録済みワークスペースを表示 |
 | `init.sh [path...]` | workspace またはパスから `.multi_compose.yaml` を生成 |
 | `run.sh` | 全コンテナ起動 |
 | `stop.sh` | 全コンテナ停止 |
