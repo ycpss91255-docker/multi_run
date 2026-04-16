@@ -40,5 +40,7 @@ _get_workspace_paths() {
             [[ -d "${target}" ]] && paths+=("${target}")
         done
     fi
-    printf '%s\n' "${paths[@]}"
+    if ((${#paths[@]} > 0)); then
+        printf '%s\n' "${paths[@]}"
+    fi
 }

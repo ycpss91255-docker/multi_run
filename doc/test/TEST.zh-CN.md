@@ -1,8 +1,8 @@
 # 测试文档
 
-共 **54 个**测试（44 Bats + 10 Python）。
+共 **58 个**测试（47 Bats + 11 Python）。覆盖率：bash 100% (127/127)、Python 100% (32/32)。
 
-## test/multi_run_spec.bats（44 个测试）
+## test/multi_run_spec.bats（47 个测试）
 
 ### 文件存在 + 可执行（5）
 
@@ -83,7 +83,15 @@
 | `status.sh shows no active session when compose file missing` | 无 session 时正常处理 |
 | `init.sh --list shows registered workspace` | 列出含 symlink 的工作区 |
 
-## test/test_resolve_compose.py（10 个测试）
+### 错误消息 regression（3）
+
+| 测试项目 | 说明 |
+|----------|------|
+| `init.sh (no args, empty workspace) fails with 'No workspace found'` | 没注册时的错误消息 |
+| `init.sh fails with 'No compose.yaml' when repo lacks compose.yaml` | repo 缺 compose.yaml 时报错 |
+| `init.sh fails with 'Failed to resolve compose' on malformed compose.yaml` | 坏 YAML 报错（需 Docker） |
+
+## test/test_resolve_compose.py（11 个测试）
 
 ### resolve() 函数（6）
 
@@ -96,7 +104,7 @@
 | `test_output_is_indented` | 输出正确缩进 |
 | `test_preserves_environment_and_volumes` | 保留环境变量和 volume 配置 |
 
-### main() 函数（4）
+### main() 函数（5）
 
 | 测试项目 | 说明 |
 |----------|------|
@@ -104,3 +112,4 @@
 | `test_main_normal` | 正常输出解析后的 YAML |
 | `test_main_error` | 空输入时打印错误 |
 | `test_main_no_devel` | 无 devel 时 exit 0 |
+| `test_script_executes_as_main` | 用 `runpy.run_path` 覆盖 `if __name__ == '__main__'` |

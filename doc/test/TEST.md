@@ -1,8 +1,8 @@
 # TEST.md
 
-**54 tests** total (44 Bats + 10 Python).
+**58 tests** total (47 Bats + 11 Python). Coverage: 100% bash (127/127), 100% Python (32/32).
 
-## test/multi_run_spec.bats (44 tests)
+## test/multi_run_spec.bats (47 tests)
 
 ### File existence + executable (5)
 
@@ -83,7 +83,15 @@
 | `status.sh shows no active session when compose file missing` | Graceful no-session |
 | `init.sh --list shows registered workspace` | Lists workspace with symlinks |
 
-## test/test_resolve_compose.py (10 tests)
+### Error-message regressions (3)
+
+| Test | Description |
+|------|-------------|
+| `init.sh (no args, empty workspace) fails with 'No workspace found'` | Error wording when nothing registered |
+| `init.sh fails with 'No compose.yaml' when repo lacks compose.yaml` | Error on invalid repo path |
+| `init.sh fails with 'Failed to resolve compose' on malformed compose.yaml` | Error on bad YAML (requires Docker) |
+
+## test/test_resolve_compose.py (11 tests)
 
 ### resolve() function (6)
 
@@ -96,7 +104,7 @@
 | `test_output_is_indented` | Output lines are indented |
 | `test_preserves_environment_and_volumes` | Keeps env and volume config |
 
-### main() function (4)
+### main() function (5)
 
 | Test | Description |
 |------|-------------|
@@ -104,3 +112,4 @@
 | `test_main_normal` | Prints resolved YAML to stdout |
 | `test_main_error` | Prints error on empty input |
 | `test_main_no_devel` | Exits 0 silently when no devel |
+| `test_script_executes_as_main` | Covers `if __name__ == '__main__'` via `runpy.run_path` |

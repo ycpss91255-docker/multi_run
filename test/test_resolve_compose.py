@@ -165,6 +165,30 @@ def test_main_no_devel():
     sys.stdout = old_stdout
 
 
+def test_script_executes_as_main():
+    """Loading resolve_compose.py with run_name='__main__' covers line 60."""
+    import runpy
+    from io import StringIO
+
+    script = os.path.join(os.path.dirname(__file__), "..", "script", "resolve_compose.py")
+
+    old_argv = sys.argv
+    old_stdin = sys.stdin
+    old_stdout = sys.stdout
+    sys.argv = ["resolve_compose.py", "my_svc"]
+    sys.stdin = StringIO("services:\n  devel:\n    image: test:devel\n")
+    sys.stdout = StringIO()
+    try:
+        runpy.run_path(script, run_name="__main__")
+    except SystemExit as e:
+        assert e.code == 0
+    output = sys.stdout.getvalue()
+    assert "my_svc:" in output
+    sys.argv = old_argv
+    sys.stdin = old_stdin
+    sys.stdout = old_stdout
+
+
 if __name__ == "__main__":
     tests = [f for f in dir() if f.startswith("test_")]
     passed = 0

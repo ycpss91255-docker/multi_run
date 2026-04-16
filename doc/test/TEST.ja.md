@@ -1,8 +1,8 @@
 # テストドキュメント
 
-合計 **54 件**（Bats 44 件 + Python 10 件）。
+合計 **58 件**（Bats 47 件 + Python 11 件）。カバレッジ：bash 100% (127/127)、Python 100% (32/32)。
 
-## test/multi_run_spec.bats（44 件）
+## test/multi_run_spec.bats（47 件）
 
 ### ファイル存在 + 実行可能（5）
 
@@ -83,7 +83,15 @@
 | `status.sh shows no active session when compose file missing` | セッション無し時の正常処理 |
 | `init.sh --list shows registered workspace` | symlink 付きワークスペース表示 |
 
-## test/test_resolve_compose.py（10 件）
+### エラーメッセージ regression（3）
+
+| テスト項目 | 説明 |
+|------------|------|
+| `init.sh (no args, empty workspace) fails with 'No workspace found'` | 未登録時のエラーメッセージ |
+| `init.sh fails with 'No compose.yaml' when repo lacks compose.yaml` | compose.yaml 欠落時エラー |
+| `init.sh fails with 'Failed to resolve compose' on malformed compose.yaml` | 不正 YAML 時エラー（Docker 必要） |
+
+## test/test_resolve_compose.py（11 件）
 
 ### resolve() 関数（6）
 
@@ -96,7 +104,7 @@
 | `test_output_is_indented` | 出力の正しいインデント |
 | `test_preserves_environment_and_volumes` | 環境変数と volume 設定を保持 |
 
-### main() 関数（4）
+### main() 関数（5）
 
 | テスト項目 | 説明 |
 |------------|------|
@@ -104,3 +112,4 @@
 | `test_main_normal` | 正常時 YAML を stdout に出力 |
 | `test_main_error` | 空入力時エラー出力 |
 | `test_main_no_devel` | devel 無し時 exit 0 |
+| `test_script_executes_as_main` | `runpy.run_path` で `if __name__ == '__main__'` をカバー |

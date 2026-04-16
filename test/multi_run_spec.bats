@@ -412,3 +412,37 @@ setup() {
     assert_success
     assert_output --partial "(empty)"
 }
+
+# ════════════════════════════════════════════════════════════════════
+# Error-message regressions — message wording is part of the UX
+# ════════════════════════════════════════════════════════════════════
+
+@test "init.sh (no args, empty workspace) fails with 'No workspace found'" {
+    local empty_ws="${BATS_TEST_TMPDIR}/empty_ws"
+    mkdir -p "${empty_ws}"
+    run env WORKSPACE_DIR="${empty_ws}" bash "${REPO_ROOT}/init.sh"
+    assert_failure
+    assert_output --partial "No workspace found"
+}
+
+@test "init.sh fails with 'No compose.yaml' when repo lacks compose.yaml" {
+    local bare_repo="${BATS_TEST_TMPDIR}/bare_repo"
+    mkdir -p "${bare_repo}"
+    run bash "${REPO_ROOT}/init.sh" "${bare_repo}"
+    assert_failure
+    assert_output --partial "No compose.yaml"
+}
+
+@test "init.sh fails with 'Failed to resolve compose' on malformed compose.yaml" {
+    command -v docker >/dev/null 2>&1 || skip "Docker not available"
+    docker info >/dev/null 2>&1 || skip "Docker daemon not running"
+
+    local bad_repo="${BATS_TEST_TMPDIR}/bad_repo"
+    mkdir -p "${bad_repo}"
+    # Malformed YAML — docker compose config should fail
+    printf 'services:\n  devel:\n    image: [unclosed\n' > "${bad_repo}/compose.yaml"
+    echo "IMAGE_NAME=bad" > "${bad_repo}/.env"
+    run bash "${REPO_ROOT}/init.sh" "${bad_repo}"
+    assert_failure
+    assert_output --partial "Failed to resolve compose"
+}

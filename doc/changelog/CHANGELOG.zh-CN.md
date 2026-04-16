@@ -27,6 +27,13 @@
 ### 测试
 - 加入 `template` git subtree（v0.8.1），让测试可以 scaffold 出真实的 template 格式 fixture
 - 移除假的 `mock_with_setup` fixture，改用动态 E2E：在 DinD 里跑 `template/init.sh` 产出真实 repo 结构，再让 multi_run 对它操作
+- 移除所有覆盖率 ignore marker（`# pragma: no cover`、`script/` kcov exclusion、codecov `script/**/*` ignore），让 100% 覆盖率是真实的不是假的
+- 加入 3 个错误消息 regression test（`No workspace found`、`No compose.yaml`、`Failed to resolve compose`）
+- 加入 `test_script_executes_as_main`，用 `runpy.run_path` 覆盖 `if __name__ == "__main__"` guard
+- 最终覆盖率：bash 127/127 (100%)、Python 32/32 (100%)、47 Bats + 11 Python = 58 tests
+
+### 修复（本 PR）
+- `_get_workspace_paths` 在没有注册任何 workspace 时会打印一个空行，导致 `mapfile` 得到含一个空字符串的数组（而非空数组）。`_generate_compose` 收到 `[""]` 会跳过 `No workspace found` 检查，直接跑到 `No compose.yaml` — 错误消息不对。修复为只在非空时打印。
 
 ### 已测试场景
 - 不同工作区、不同 repo
