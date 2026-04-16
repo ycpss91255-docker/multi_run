@@ -24,6 +24,10 @@
 ### 修复
 - setup.sh 路径改为 `template/script/docker/setup.sh`（原为 `docker_template/setup.sh`），支持 template 格式的 repo
 
+### 测试
+- 加入 `template` git subtree（v0.8.1），让测试可以 scaffold 出真实的 template 格式 fixture
+- 移除假的 `mock_with_setup` fixture，改用动态 E2E：在 DinD 里跑 `template/init.sh` 产出真实 repo 结构，再让 multi_run 对它操作
+
 ### 已测试场景
 - 不同工作区、不同 repo
 - 同工作区、不同 repo

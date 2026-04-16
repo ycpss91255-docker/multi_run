@@ -260,6 +260,8 @@ multi_run/
 │   ├── readme/                # README 翻譯
 │   ├── test/                  # TEST.md + 翻譯
 │   └── changelog/             # CHANGELOG.md + 翻譯
+├── template/                  # git subtree（僅測試用，v0.8.1）
+├── .template_version
 ├── .github/workflows/
 │   └── self-test.yaml
 ├── .codecov.yaml
@@ -267,6 +269,10 @@ multi_run/
 ├── LICENSE
 └── README.md
 ```
+
+> `template/` 以 git subtree 形式納入，**只用於測試**——multi_run 的 runtime
+> 腳本不依賴它。E2E 測試會用 `template/init.sh` 在 DinD 裡 scaffold 出真實的
+> template 格式 fixture，再讓 multi_run 對它操作。
 
 ## 測試
 

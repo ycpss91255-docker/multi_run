@@ -79,7 +79,7 @@
 | `workspace scan mode: add -> init (no args) -> run -> stop` | エンドツーエンド workspace モード |
 | `init.sh fails with invalid workspace path` | 存在しないパス時エラー |
 | `init.sh fails for repo without .env and no setup.sh` | .env 欠落時エラー |
-| `init.sh generates .env via setup.sh when missing` | template 経由で .env 自動生成 |
+| `e2e: init.sh uses real template setup.sh to generate .env` | 実 `template/init.sh` でリポをスキャフォールドし、multi_run が `template/script/docker/setup.sh` を呼び出して `.env` を自動生成することを検証 |
 | `status.sh shows no active session when compose file missing` | セッション無し時の正常処理 |
 | `init.sh --list shows registered workspace` | symlink 付きワークスペース表示 |
 

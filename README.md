@@ -278,6 +278,8 @@ multi_run/
 │   ├── readme/                # README translations
 │   ├── test/                  # TEST.md + translations
 │   └── changelog/             # CHANGELOG.md + translations
+├── template/                  # git subtree (test-only, v0.8.1)
+├── .template_version
 ├── .github/workflows/
 │   └── self-test.yaml
 ├── .codecov.yaml
@@ -285,4 +287,9 @@ multi_run/
 ├── LICENSE
 └── README.md
 ```
+
+> `template/` is included as a git subtree **for testing only** — multi_run's
+> runtime scripts do not depend on it. The E2E test uses `template/init.sh` to
+> scaffold a realistic template-based repo fixture in DinD, then exercises
+> multi_run against that fixture.
 

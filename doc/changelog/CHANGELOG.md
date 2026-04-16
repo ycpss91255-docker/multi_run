@@ -24,6 +24,10 @@ versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 - Use `template/script/docker/setup.sh` path for template-based repos (was `docker_template/setup.sh`)
 
+### Testing
+- Added `template` as git subtree at v0.8.1 so tests can scaffold real template-based fixtures
+- Replaced fake `mock_with_setup` fixture with a dynamic E2E that uses `template/init.sh` in DinD to produce a real repo layout, then exercises multi_run against it
+
 ### Tested scenarios
 - Different workspaces, different repos
 - Same workspace, different repos
