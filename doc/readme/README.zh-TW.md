@@ -14,8 +14,8 @@
 ## TL;DR
 
 ```bash
-./add.sh ~/robot_ws/docker_ros_noetic
-./add.sh ~/nav_ws/docker_ros2_humble
+./init.sh --add ~/robot_ws/docker_ros_noetic
+./init.sh --add ~/nav_ws/docker_ros2_humble
 ./init.sh && ./run.sh       # 啟動全部
 ./stop.sh                   # 停止全部
 ```
@@ -54,10 +54,10 @@ cd multi_run
 
 註冊它們：
 ```bash
-./add.sh ~/robot_a_ws/docker_ros_noetic
+./init.sh --add ~/robot_a_ws/docker_ros_noetic
 # [multi] Added: docker_ros_noetic → /home/user/robot_a_ws/docker_ros_noetic
 
-./add.sh ~/robot_b_ws/docker_ros2_humble
+./init.sh --add ~/robot_b_ws/docker_ros2_humble
 # [multi] Added: docker_ros2_humble → /home/user/robot_b_ws/docker_ros2_humble
 ```
 
@@ -133,8 +133,8 @@ workspace/
 
 ```bash
 # 一次性設定
-./add.sh ~/robot_a_ws/docker_ros_noetic
-./add.sh ~/robot_b_ws/docker_ros2_humble
+./init.sh --add ~/robot_a_ws/docker_ros_noetic
+./init.sh --add ~/robot_b_ws/docker_ros2_humble
 
 # 日常工作流程
 ./init.sh && ./run.sh    # 啟動
@@ -159,7 +159,7 @@ workspace/
 ```mermaid
 flowchart TD
     subgraph "設定（一次性）"
-        add["./add.sh path"]
+        add["./init.sh --add path"]
         ws["workspace/<br/>symlinks"]
         add -->|"建立 symlink"| ws
     end
@@ -193,8 +193,9 @@ flowchart TD
 
 | 腳本 | 用法 | 說明 |
 |------|------|------|
-| `add.sh <path>` | `./add.sh ~/ws/docker_ros_noetic` | 註冊工作區（`workspace/` 建立 symlink） |
-| `remove.sh <name>` | `./remove.sh docker_ros_noetic` | 取消註冊工作區 |
+| `init.sh --add <path>` | `./init.sh --add ~/ws/docker_ros_noetic` | 註冊工作區（`workspace/` 建立 symlink） |
+| `init.sh --remove <name>` | `./init.sh --remove docker_ros_noetic` | 取消註冊工作區 |
+| `init.sh --list` | `./init.sh --list` | 列出已註冊的工作區 |
 | `init.sh [path...]` | `./init.sh` 或 `./init.sh path1 path2` | 生成 `.multi_compose.yaml` |
 | `run.sh` | `./run.sh` | 啟動所有容器 |
 | `stop.sh` | `./stop.sh` | 停止並移除所有容器 |
@@ -215,9 +216,9 @@ flowchart TD
 
 ## 運作原理（技術細節）
 
-1. **`add.sh`** 建立 symlink：`workspace/<name> → /absolute/path/to/repo`
+1. **`init.sh --add`** 建立 symlink：`workspace/<name> → /absolute/path/to/repo`
 
-2. **`init.sh`** 對每個工作區：
+2. **`init.sh`**（無參數或指定路徑）對每個工作區：
    - 執行 `docker compose --env-file .env config` 完全展開所有 `${VAR}` 引用
    - 使用 Python 提取 `devel` service，移除 `container_name`，重命名為 `{IMAGE_NAME}_{hash}`
    - 附加到 `.multi_compose.yaml`
@@ -239,23 +240,22 @@ make help     # 顯示所有可用指令
 
 ```
 multi_run/
-├── init.sh                    # 生成合併 compose
+├── init.sh                    # 工作區管理 + 生成合併 compose
 ├── run.sh                     # 啟動容器
 ├── exec.sh                    # 進入容器
 ├── stop.sh                    # 停止容器
 ├── status.sh                  # 顯示狀態
-├── add.sh                     # 加入工作區
-├── remove.sh                  # 移除工作區
-├── script/
-│   ├── lib.sh                  # 共用函式
-├── workspace/                # Docker repo 的 symlinks
+├── workspace/                 # Docker repo 的 symlinks
 ├── Makefile                   # 指令入口
 ├── compose.yaml               # CI 執行器
 ├── script/
-│   └── ci.sh                  # CI pipeline
+│   ├── lib.sh                 # 共用函式
+│   ├── ci.sh                  # CI pipeline
+│   └── resolve_compose.py     # Compose YAML 合併工具
 ├── test/
-│   ├── multi_run_spec.bats
-│   └── test_helper.bash
+│   ├── multi_run_spec.bats    # Bats 測試
+│   ├── test_helper.bash
+│   └── test_resolve_compose.py # Python 測試
 ├── doc/
 │   ├── readme/                # README 翻譯
 │   ├── test/                  # TEST.md + 翻譯

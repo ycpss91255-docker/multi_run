@@ -6,13 +6,23 @@
 ## [未リリース]
 
 ### 追加
-- 7 スクリプト：`init.sh`、`run.sh`、`exec.sh`、`stop.sh`、`status.sh`、`add.sh`、`remove.sh`
+- 5 スクリプト：`init.sh`、`run.sh`、`exec.sh`、`stop.sh`、`status.sh`
+- `init.sh` サブコマンド：`--add`、`--remove`、`--list`（ワークスペース管理）
 - `lib.sh`：共有関数（`_path_id`、`_log`、`_error`、`_get_workspace_paths`）
-- `workspaces/` ディレクトリ：symlink ベースのワークスペース管理
+- `resolve_compose.py`：展開済み compose YAML から devel サービスを抽出・リネーム
+- `workspace/` ディレクトリ：symlink ベースのワークスペース管理
 - `docker compose config` 展開 + Python サービスリネーム（ユニークサービス名）
-- 26 件の Bats テスト + ShellCheck
 - 2 モード：workspace symlink スキャン / 直接パス引数
-- CI：ShellCheck + Bats（docker compose 経由）
+- 54 テスト（Bats 44 件 + Python 10 件）+ ShellCheck
+- CI：ShellCheck + Bats + Python coverage + Kcov（docker compose 経由、DinD）
+- Codecov 統合
+
+### 変更
+- `add.sh` / `remove.sh` を `init.sh --add` / `init.sh --remove` に統合
+- `scripts/` を `script/` に、`workspaces/` を `workspace/` にリネーム
+
+### 修正
+- setup.sh パスを `template/script/docker/setup.sh` に変更（旧 `docker_template/setup.sh`）、template 形式の repo をサポート
 
 ### テスト済みシナリオ
 - 異なるワークスペース、異なるリポ

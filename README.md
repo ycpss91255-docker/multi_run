@@ -32,8 +32,8 @@ Launch multiple Docker containers from different workspace simultaneously.
 ## TL;DR
 
 ```bash
-./add.sh ~/robot_ws/docker_ros_noetic
-./add.sh ~/nav_ws/docker_ros2_humble
+./init.sh --add ~/robot_ws/docker_ros_noetic
+./init.sh --add ~/nav_ws/docker_ros2_humble
 ./init.sh && ./run.sh       # start all
 ./stop.sh                   # stop all
 ```
@@ -72,10 +72,10 @@ Suppose you have two workspace:
 
 Register them:
 ```bash
-./add.sh ~/robot_a_ws/docker_ros_noetic
+./init.sh --add ~/robot_a_ws/docker_ros_noetic
 # [multi] Added: docker_ros_noetic → /home/user/robot_a_ws/docker_ros_noetic
 
-./add.sh ~/robot_b_ws/docker_ros2_humble
+./init.sh --add ~/robot_b_ws/docker_ros2_humble
 # [multi] Added: docker_ros2_humble → /home/user/robot_b_ws/docker_ros2_humble
 ```
 
@@ -151,8 +151,8 @@ Register workspace once, then `./init.sh && ./run.sh` every time.
 
 ```bash
 # One-time setup
-./add.sh ~/robot_a_ws/docker_ros_noetic
-./add.sh ~/robot_b_ws/docker_ros2_humble
+./init.sh --add ~/robot_a_ws/docker_ros_noetic
+./init.sh --add ~/robot_b_ws/docker_ros2_humble
 
 # Daily workflow
 ./init.sh && ./run.sh    # start
@@ -177,7 +177,7 @@ Specify paths directly without saving to `workspace/`.
 ```mermaid
 flowchart TD
     subgraph "Setup (one-time)"
-        add["./add.sh path"]
+        add["./init.sh --add path"]
         ws["workspace/<br/>symlinks"]
         add -->|"create symlink"| ws
     end
@@ -211,8 +211,9 @@ flowchart TD
 
 | Script | Usage | Description |
 |--------|-------|-------------|
-| `add.sh <path>` | `./add.sh ~/ws/docker_ros_noetic` | Register a workspace (symlink in `workspace/`) |
-| `remove.sh <name>` | `./remove.sh docker_ros_noetic` | Unregister a workspace |
+| `init.sh --add <path>` | `./init.sh --add ~/ws/docker_ros_noetic` | Register a workspace (symlink in `workspace/`) |
+| `init.sh --remove <name>` | `./init.sh --remove docker_ros_noetic` | Unregister a workspace |
+| `init.sh --list` | `./init.sh --list` | List registered workspace |
 | `init.sh [path...]` | `./init.sh` or `./init.sh path1 path2` | Generate `.multi_compose.yaml` |
 | `run.sh` | `./run.sh` | Start all containers |
 | `stop.sh` | `./stop.sh` | Stop and remove all containers |
@@ -233,9 +234,9 @@ Same repo from different workspace works because each instance gets a unique ser
 
 ## How It Works (Technical)
 
-1. **`add.sh`** creates a symlink: `workspace/<name> → /absolute/path/to/repo`
+1. **`init.sh --add`** creates a symlink: `workspace/<name> → /absolute/path/to/repo`
 
-2. **`init.sh`** for each workspace:
+2. **`init.sh`** (no args or with paths) for each workspace:
    - Runs `docker compose --env-file .env config` to fully resolve all `${VAR}` references
    - Uses Python to extract the `devel` service, remove `container_name`, and rename to `{IMAGE_NAME}_{hash}`
    - Appends to `.multi_compose.yaml`
@@ -257,13 +258,11 @@ make help     # Show all targets
 
 ```
 multi_run/
-├── init.sh                    # Generate merged compose
+├── init.sh                    # Workspace management + generate merged compose
 ├── run.sh                     # Start containers
 ├── exec.sh                    # Exec into container
 ├── stop.sh                    # Stop containers
 ├── status.sh                  # Show status
-├── add.sh                     # Add workspace
-├── remove.sh                  # Remove workspace
 ├── workspace/                 # Symlinks to Docker repos
 ├── Makefile                   # Command entry
 ├── compose.yaml               # CI runner
@@ -272,8 +271,9 @@ multi_run/
 │   ├── ci.sh                  # CI pipeline
 │   └── resolve_compose.py     # Compose YAML merge tool
 ├── test/
-│   ├── multi_run_spec.bats
-│   └── test_helper.bash
+│   ├── multi_run_spec.bats    # Bats tests
+│   ├── test_helper.bash
+│   └── test_resolve_compose.py # Python tests
 ├── doc/
 │   ├── readme/                # README translations
 │   ├── test/                  # TEST.md + translations

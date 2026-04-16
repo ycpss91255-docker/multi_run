@@ -99,8 +99,8 @@ HEADER
 
         # Ensure .env
         if [[ ! -f "${p}/.env" ]]; then
-            if [[ -f "${p}/docker_template/setup.sh" ]]; then
-                "${p}/docker_template/setup.sh" --base-path "${p}"  # LCOV_EXCL_LINE
+            if [[ -f "${p}/template/script/docker/setup.sh" ]]; then
+                "${p}/template/script/docker/setup.sh" --base-path "${p}"
             else
                 _error "No .env in ${p}"
             fi
