@@ -38,7 +38,7 @@
 
 ## 概要
 
-複数の [docker_template](https://github.com/ycpss91255-docker/docker_template) コンテナを一括管理。各ワークスペースの `compose.yaml` を展開・統合し、ユニークなサービス名で競合を回避。
+複数の [template](https://github.com/ycpss91255-docker/template) コンテナを一括管理。各ワークスペースの `compose.yaml` を展開・統合し、ユニークなサービス名で競合を回避。
 
 ### アーキテクチャ
 

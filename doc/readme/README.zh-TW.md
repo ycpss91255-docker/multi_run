@@ -26,13 +26,13 @@
 
 **multi_run** 將所有 Docker 工作區集中管理。它把多個 `compose.yaml` 合併成一個檔案，並使用唯一的 service name，讓你用簡單的指令啟動、停止和管理所有容器。
 
-適用於任何 [docker_template](https://github.com/ycpss91255-docker/docker_template) 為基礎的 repo。
+適用於任何 [template](https://github.com/ycpss91255-docker/template) 為基礎的 repo。
 
 ## 前置需求
 
 - Docker + Docker Compose v2
 - Python 3 + `pyyaml`（`pip install pyyaml`）
-- 以 [docker_template](https://github.com/ycpss91255-docker/docker_template) 建置的 Docker repo（需有 `compose.yaml` + `.env`）
+- 以 [template](https://github.com/ycpss91255-docker/template) 建置的 Docker repo（需有 `compose.yaml` + `.env`）
 
 ## 快速開始
 

@@ -13,7 +13,7 @@
 - `workspace/` 目录：基于 symlink 的工作区管理
 - `docker compose config` 展开 + Python service 重命名（唯一 service name）
 - 两种模式：workspace symlink 扫描 / 直接路径参数
-- 54 个测试（44 Bats + 10 Python）+ ShellCheck
+- 58 个测试（47 Bats + 11 Python）+ ShellCheck
 - CI：ShellCheck + Bats + Python coverage + Kcov（通过 docker compose，DinD）
 - Codecov 集成
 
@@ -23,6 +23,7 @@
 
 ### 修复
 - setup.sh 路径改为 `template/script/docker/setup.sh`（原为 `docker_template/setup.sh`），支持 template 格式的 repo
+- README（4 种语言）：把过时的 `docker_template` 链接更新为现行的 `template` repo。CHANGELOG 中描述历史改名的条目保留不动。
 
 ### 测试
 - 加入 `template` git subtree（v0.8.1），让测试可以 scaffold 出真实的 template 格式 fixture
