@@ -4,6 +4,6 @@ coverage/
 workspace/*
 !workspace/.gitkeep
 .coverage
-.coverage
+__pycache__/
 script/workspace/
 script/.multi_*
