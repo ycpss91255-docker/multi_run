@@ -27,6 +27,13 @@
 ### テスト
 - `template` を git subtree（v0.8.1）として追加し、テストで実際の template 形式のフィクスチャをスキャフォールド可能に
 - 偽の `mock_with_setup` フィクスチャを削除し、DinD 内で `template/init.sh` を実行して実リポ構造を生成する動的 E2E テストに置換
+- カバレッジ ignore マーカーを全て削除（`# pragma: no cover`、`script/` kcov 除外、codecov `script/**/*` ignore）— 100% カバレッジが真実になり隠蔽なし
+- 3 つのエラーメッセージ regression test を追加（`No workspace found`、`No compose.yaml`、`Failed to resolve compose`）
+- `test_script_executes_as_main` を追加し、`runpy.run_path` で `if __name__ == "__main__"` ガードをカバー
+- 最終カバレッジ：bash 127/127 (100%)、Python 32/32 (100%)、Bats 47 件 + Python 11 件 = 58 件
+
+### 修正（本 PR）
+- `_get_workspace_paths` は未登録時に空行を出力し、`mapfile` が空文字列 1 要素を含む配列を生成（空配列ではなく）。`_generate_compose` が `[""]` を受け取り `No workspace found` ガードをスキップ、`No compose.yaml` エラーに到達 — 間違ったメッセージ。非空時のみ出力するよう修正。
 
 ### テスト済みシナリオ
 - 異なるワークスペース、異なるリポ

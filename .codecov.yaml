@@ -13,7 +13,8 @@ coverage:
 
 ignore:
   - "test/**/*"
-  - "script/**/*"
+  - "script/ci.sh"
+  - "template/**/*"
   - ".github/**/*"
 
 comment:
