@@ -13,7 +13,7 @@
 - `workspace/` ディレクトリ：symlink ベースのワークスペース管理
 - `docker compose config` 展開 + Python サービスリネーム（ユニークサービス名）
 - 2 モード：workspace symlink スキャン / 直接パス引数
-- 54 テスト（Bats 44 件 + Python 10 件）+ ShellCheck
+- 58 テスト（Bats 47 件 + Python 11 件）+ ShellCheck
 - CI：ShellCheck + Bats + Python coverage + Kcov（docker compose 経由、DinD）
 - Codecov 統合
 
@@ -23,6 +23,7 @@
 
 ### 修正
 - setup.sh パスを `template/script/docker/setup.sh` に変更（旧 `docker_template/setup.sh`）、template 形式の repo をサポート
+- README（4 言語）：古い `docker_template` へのリンクを現行の `template` repo に更新。歴史的なリネームを記述した CHANGELOG エントリはそのまま保持。
 
 ### テスト
 - `template` を git subtree（v0.8.1）として追加し、テストで実際の template 形式のフィクスチャをスキャフォールド可能に

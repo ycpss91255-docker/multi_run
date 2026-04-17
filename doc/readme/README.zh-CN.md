@@ -38,7 +38,7 @@
 
 ## 概述
 
-管理多个 [docker_template](https://github.com/ycpss91255-docker/docker_template) 容器。各工作区的 `compose.yaml` 会被展开并合并成一个 compose 文件，使用唯一 service name 避免冲突。
+管理多个 [template](https://github.com/ycpss91255-docker/template) 容器。各工作区的 `compose.yaml` 会被展开并合并成一个 compose 文件，使用唯一 service name 避免冲突。
 
 ### 架构
 

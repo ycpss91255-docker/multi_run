@@ -13,7 +13,7 @@ versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `workspace/` directory for symlink-based workspace management
 - `docker compose config` resolve + Python service rename for unique service names
 - Two modes: workspace symlink scanning and direct path arguments
-- 54 tests (44 Bats + 10 Python) + ShellCheck
+- 58 tests (47 Bats + 11 Python) + ShellCheck
 - CI: ShellCheck + Bats + Python coverage + Kcov (via docker compose, DinD)
 - Codecov integration
 
@@ -23,6 +23,7 @@ versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 - Use `template/script/docker/setup.sh` path for template-based repos (was `docker_template/setup.sh`)
+- README (4 languages): replace stale `docker_template` references with the current `template` repo link. The CHANGELOG entries describing the historical rename are preserved.
 
 ### Testing
 - Added `template` as git subtree at v0.8.1 so tests can scaffold real template-based fixtures
