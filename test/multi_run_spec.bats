@@ -417,6 +417,69 @@ setup() {
 # Error-message regressions — message wording is part of the UX
 # ════════════════════════════════════════════════════════════════════
 
+# ════════════════════════════════════════════════════════════════════
+# Network isolation: .multi_network.yaml
+# ════════════════════════════════════════════════════════════════════
+
+@test "init.sh -h shows network isolation section" {
+    run bash "${REPO_ROOT}/init.sh" -h
+    assert_line --partial "multi_network.yaml"
+}
+
+@test "init.sh generates networks section when .multi_network.yaml exists" {
+    command -v docker >/dev/null 2>&1 || skip "Docker not available"
+    docker info >/dev/null 2>&1 || skip "Docker daemon not running"
+
+    local mock="${REPO_ROOT}/test/fixture/mock_repo"
+    cat > "${REPO_ROOT}/.multi_network.yaml" <<'EOF'
+groups:
+  test_net:
+    - mock_repo
+EOF
+    run bash "${REPO_ROOT}/init.sh" "${mock}"
+    assert_success
+    run grep "networks:" "${REPO_ROOT}/.multi_compose.yaml"
+    assert_success
+    run grep "test_net:" "${REPO_ROOT}/.multi_compose.yaml"
+    assert_success
+    rm -f "${REPO_ROOT}/.multi_network.yaml"
+}
+
+@test "init.sh preserves host mode for ungrouped containers" {
+    command -v docker >/dev/null 2>&1 || skip "Docker not available"
+    docker info >/dev/null 2>&1 || skip "Docker daemon not running"
+
+    local mock="${REPO_ROOT}/test/fixture/mock_repo"
+    # Empty groups — no container is grouped
+    cat > "${REPO_ROOT}/.multi_network.yaml" <<'EOF'
+groups:
+  some_other:
+    - nonexistent_repo
+EOF
+    run bash "${REPO_ROOT}/init.sh" "${mock}"
+    assert_success
+    # No top-level networks section should appear for ungrouped containers
+    run grep "^networks:" "${REPO_ROOT}/.multi_compose.yaml"
+    assert_failure
+    rm -f "${REPO_ROOT}/.multi_network.yaml"
+}
+
+@test "init.sh works normally without .multi_network.yaml" {
+    command -v docker >/dev/null 2>&1 || skip "Docker not available"
+    docker info >/dev/null 2>&1 || skip "Docker daemon not running"
+
+    local mock="${REPO_ROOT}/test/fixture/mock_repo"
+    rm -f "${REPO_ROOT}/.multi_network.yaml"
+    run bash "${REPO_ROOT}/init.sh" "${mock}"
+    assert_success
+    run grep "^networks:" "${REPO_ROOT}/.multi_compose.yaml"
+    assert_failure
+}
+
+# ════════════════════════════════════════════════════════════════════
+# Error-message regressions — message wording is part of the UX
+# ════════════════════════════════════════════════════════════════════
+
 @test "init.sh (no args, empty workspace) fails with 'No workspace found'" {
     local empty_ws="${BATS_TEST_TMPDIR}/empty_ws"
     mkdir -p "${empty_ws}"
