@@ -189,6 +189,59 @@ def test_script_executes_as_main():
     sys.stdout = old_stdout
 
 
+def test_networks_removes_network_mode():
+    yaml_in = """
+services:
+  devel:
+    image: test/repo:devel
+    network_mode: host
+"""
+    stdout, stderr, code = resolve(yaml_in, "svc_id", networks=["robot_a"])
+    assert code == 0
+    assert "network_mode" not in stdout
+
+
+def test_networks_removes_ipc():
+    yaml_in = """
+services:
+  devel:
+    image: test/repo:devel
+    ipc: host
+    network_mode: host
+"""
+    stdout, stderr, code = resolve(yaml_in, "svc_id", networks=["robot_a"])
+    assert code == 0
+    assert "ipc" not in stdout
+
+
+def test_networks_adds_specified_networks():
+    yaml_in = """
+services:
+  devel:
+    image: test/repo:devel
+    network_mode: host
+"""
+    stdout, stderr, code = resolve(yaml_in, "svc_id", networks=["robot_a", "robot_b"])
+    assert code == 0
+    assert "robot_a" in stdout
+    assert "robot_b" in stdout
+    assert "networks:" in stdout
+
+
+def test_networks_none_preserves_original():
+    yaml_in = """
+services:
+  devel:
+    image: test/repo:devel
+    network_mode: host
+    ipc: host
+"""
+    stdout, stderr, code = resolve(yaml_in, "svc_id", networks=None)
+    assert code == 0
+    assert "network_mode" in stdout
+    assert "ipc" in stdout
+
+
 if __name__ == "__main__":
     tests = [f for f in dir() if f.startswith("test_")]
     passed = 0

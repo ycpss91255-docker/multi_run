@@ -24,6 +24,7 @@ Launch multiple Docker containers from different workspace simultaneously.
 - [Scripts Reference](#scripts-reference)
 - [Supported Scenarios](#supported-scenarios)
 - [How It Works (Technical)](#how-it-works-technical)
+- [Network Isolation](#network-isolation)
 - [Running Tests](#running-tests)
 - [Directory Structure](#directory-structure)
 
@@ -245,6 +246,36 @@ Same repo from different workspace works because each instance gets a unique ser
 
 The path hash (`_2a8b`) is the first 4 characters of the MD5 hash of the absolute path, ensuring same-repo-different-workspace instances get different names.
 
+## Network Isolation
+
+By default, all containers share the host network (`network_mode: host`), so all ROS masters and ROS 2 nodes can see each other.
+
+To isolate containers into separate networks, create `.multi_network.yaml`:
+
+```yaml
+groups:
+  robot_a:
+    - docker_ros_noetic
+    - docker_ros1_bridge
+  robot_b:
+    - docker_ros2_humble
+    - docker_ros1_bridge    # appears in both groups (bridges them)
+```
+
+- Containers in the same group share a bridge network (can communicate)
+- Different groups are isolated (cannot communicate)
+- A container in multiple groups can bridge them
+- Containers not listed in any group keep `network_mode: host`
+
+Then run `./init.sh` as usual. The generated `.multi_compose.yaml` will include per-group bridge networks.
+
+| Setting | Behavior |
+|---------|----------|
+| No `.multi_network.yaml` | All containers on host network (default) |
+| Grouped containers | Share a bridge network per group |
+| Ungrouped containers | Keep `network_mode: host` |
+| Container in multiple groups | Connected to all listed bridge networks |
+
 ## Running Tests
 
 ```bash
@@ -269,11 +300,13 @@ multi_run/
 ├── script/
 │   ├── lib.sh                 # Shared functions
 │   ├── ci.sh                  # CI pipeline
-│   └── resolve_compose.py     # Compose YAML merge tool
+│   ├── resolve_compose.py     # Compose YAML merge tool
+│   └── parse_network_config.py # Network config parser
 ├── test/
 │   ├── multi_run_spec.bats    # Bats tests
 │   ├── test_helper.bash
-│   └── test_resolve_compose.py # Python tests
+│   ├── test_resolve_compose.py     # Python tests (resolve)
+│   └── test_parse_network_config.py # Python tests (network config)
 ├── doc/
 │   ├── readme/                # README translations
 │   ├── test/                  # TEST.md + translations
