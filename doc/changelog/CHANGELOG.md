@@ -13,7 +13,13 @@ versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `workspace/` directory for symlink-based workspace management
 - `docker compose config` resolve + Python service rename for unique service names
 - Two modes: workspace symlink scanning and direct path arguments
-- 58 tests (47 Bats + 11 Python) + ShellCheck
+- Network isolation via `.multi_network.yaml`: group containers into
+  bridge networks for ROS master / DDS isolation. Containers in the
+  same group share a bridge network; different groups are isolated.
+  Ungrouped containers keep `network_mode: host` (default behavior).
+  A container can appear in multiple groups to bridge them.
+- `parse_network_config.py`: parse `.multi_network.yaml` config
+- 72 tests (51 Bats + 21 Python) + ShellCheck
 - CI: ShellCheck + Bats + Python coverage + Kcov (via docker compose, DinD)
 - Codecov integration
 

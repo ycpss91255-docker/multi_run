@@ -14,8 +14,15 @@ import yaml
 import io
 
 
-def resolve(input_text, service_id):
+def resolve(input_text, service_id, networks=None):
     """Extract devel service, rename to service_id, return indented YAML.
+
+    Args:
+        input_text: Resolved docker compose YAML string.
+        service_id: Unique service identifier for renaming.
+        networks: Optional list of network names. When provided,
+            removes network_mode/ipc and assigns the service to
+            the specified bridge networks.
 
     Returns:
         tuple: (output_text, error_text, exit_code)
@@ -33,6 +40,11 @@ def resolve(input_text, service_id):
     svc = services["devel"]
     svc.pop("container_name", None)
 
+    if networks:
+        svc.pop("network_mode", None)
+        svc.pop("ipc", None)
+        svc["networks"] = networks
+
     output = {service_id: svc}
     stream = io.StringIO()
     yaml.dump(output, stream, default_flow_style=False, allow_unicode=True)
@@ -42,13 +54,20 @@ def resolve(input_text, service_id):
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: resolve_compose.py <service_id>", file=sys.stderr)
+        print("Usage: resolve_compose.py <service_id> [--networks net1,net2]",
+              file=sys.stderr)
         sys.exit(1)
 
     service_id = sys.argv[1]
+    networks = None
+    if "--networks" in sys.argv:
+        idx = sys.argv.index("--networks")
+        if idx + 1 < len(sys.argv):
+            networks = sys.argv[idx + 1].split(",")
+
     input_text = sys.stdin.read()
 
-    stdout, stderr, code = resolve(input_text, service_id)
+    stdout, stderr, code = resolve(input_text, service_id, networks=networks)
     if stderr:
         print(stderr, file=sys.stderr)
     if stdout:

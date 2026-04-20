@@ -52,6 +52,7 @@ _run_python_tests() {
     echo "--- Running Python Tests with Coverage ---"
     cd "${REPO_ROOT}"
     python3-coverage run --source=script test/test_resolve_compose.py
+    python3-coverage run --source=script --append test/test_parse_network_config.py
     python3-coverage xml -o coverage/python-coverage.xml
     python3-coverage report
 }
