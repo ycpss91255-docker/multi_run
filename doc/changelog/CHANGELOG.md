@@ -26,6 +26,16 @@ versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 - Merged `add.sh` / `remove.sh` into `init.sh --add` / `init.sh --remove`
 - Renamed `scripts/` to `script/`, `workspaces/` to `workspace/`
+- README.md aligned to the template framework reference applied in
+  ycpss91255-docker/ros1_bridge#63 (merge 148c411): standardized the
+  CI status badge form (renamed `Self Test` to `CI` to match the rest
+  of the org), dropped the three decorative shields.io badges
+  (Language / Testing / ShellCheck) since the CI badge already
+  conveys their status, and added a `See [TEST.md](doc/test/TEST.md)`
+  pointer in the Running Tests section. The existing `## TL;DR` and
+  `## Overview` H2 structure already matched the framework and was
+  left unchanged. Translations untouched -- they will be fanned out
+  in a follow-up PR.
 
 ### Fixed
 - Use `template/script/docker/setup.sh` path for template-based repos (was `docker_template/setup.sh`)
