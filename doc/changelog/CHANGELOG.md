@@ -5,6 +5,16 @@ versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- License migrated from GPL-3.0 to Apache 2.0 (#10). Aligns with
+  upstream `osrf/docker_images` and the rest of the
+  `ycpss91255-docker` org; explicit patent grant + retaliation
+  clause; matches the org-wide migration tracked across 17 sister
+  repos. README License badge updated across all 4 language
+  variants. The non-English READMEs' badge link path was also
+  corrected from `./LICENSE` (a stale relative pointer to
+  `doc/readme/LICENSE`) to `../../LICENSE`.
+
 ### Added
 - 5 scripts: `init.sh`, `run.sh`, `exec.sh`, `stop.sh`, `status.sh`
 - `init.sh` subcommands: `--add`, `--remove`, `--list` for workspace management
