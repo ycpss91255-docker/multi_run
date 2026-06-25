@@ -17,6 +17,21 @@ export STATE_FILE="${MULTI_ROOT}/.multi_state"
 _log() { printf "[multi] %s\n" "$*"; }
 _error() { printf "[multi] ERROR: %s\n" "$*" >&2; exit 1; }
 
+# ── Env file resolution ──────────────────────────────────────────────────────
+
+# _env_file echoes the env file a downstream repo should be resolved against:
+# the derived .env.generated interpolation cache (base #502) when present,
+# otherwise the legacy .env. Always echoes a path -- the .env default even when
+# neither file exists -- so callers do their own existence check.
+_env_file() {
+    local repo_path="$1"
+    if [[ -f "${repo_path}/.env.generated" ]]; then
+        echo "${repo_path}/.env.generated"
+    else
+        echo "${repo_path}/.env"
+    fi
+}
+
 # ── Path ID ──────────────────────────────────────────────────────────────────
 
 _path_id() {
