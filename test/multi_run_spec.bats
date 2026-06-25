@@ -144,6 +144,20 @@ setup() {
 }
 
 # ════════════════════════════════════════════════════════════════════
+# lib.sh: _env_file (prefer .env.generated over .env, #17)
+# ════════════════════════════════════════════════════════════════════
+
+@test "_env_file prefers .env.generated when present" {
+    local d="${BATS_TEST_TMPDIR}/repo"
+    mkdir -p "${d}"
+    : > "${d}/.env"
+    : > "${d}/.env.generated"
+    run bash -c "source ${REPO_ROOT}/script/lib.sh; _env_file '${d}'"
+    assert_success
+    assert_output "${d}/.env.generated"
+}
+
+# ════════════════════════════════════════════════════════════════════
 # lib.sh: _log / _error
 # ════════════════════════════════════════════════════════════════════
 
