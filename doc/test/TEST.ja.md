@@ -50,13 +50,19 @@
 | `init.sh --remove fails without arguments` | 名前未指定時エラー |
 | `init.sh --remove fails for non-existent name` | 名前不存在時エラー |
 
-### lib.sh 関数（7）
+### lib.sh 関数（13）
 
 | テスト項目 | 説明 |
 |------------|------|
 | `_log outputs [multi] prefix` | ログ形式 |
 | `_error outputs ERROR prefix and exits 1` | エラー形式 + exit code |
+| `_env_file prefers .env.generated when present` | `.env` より `.env.generated` を優先（base #502） |
+| `_env_file falls back to .env when no .env.generated` | 旧来の `.env` にフォールバック |
+| `_setup_wrapper prefers new script/docker/setup.sh over legacy template path` | post-ADR-00000010 の配置を先に探る |
+| `_setup_wrapper falls back to legacy template setup.sh` | 旧来の template wrapper にフォールバック |
+| `_setup_wrapper fails when no setup entry exists` | setup entry が無い時エラー |
 | `_path_id generates unique ID from path` | ID 形式：`{IMAGE_NAME}_{hash}` |
+| `_path_id reads IMAGE_NAME from .env.generated when present` | IMAGE_NAME を `.env.generated` から取得 |
 | `_path_id falls back to dirname when no .env` | .env 無し時ディレクトリ名にフォールバック |
 | `_path_id generates different ID for same repo different ws` | パスごとに異なるハッシュ |
 | `_get_workspace_paths returns empty for empty workspace dir` | 空ディレクトリスキャン |
@@ -71,11 +77,12 @@
 | `exec.sh fails without arguments` | サービス名未指定時エラー |
 | `init.sh --list shows empty when workspace dir missing` | 存在しないディレクトリを処理 |
 
-### 統合テスト（7、Docker daemon 必要）
+### 統合テスト（8、Docker daemon 必要）
 
 | テスト項目 | 説明 |
 |------------|------|
 | `full lifecycle: init -> run -> status -> exec -> stop with mock repo` | エンドツーエンド直接パスモード |
+| `init.sh resolves interpolation vars from .env.generated (base #502)` | コメントのみの `.env` ではなく `.env.generated` から `${VAR}` を解決 |
 | `workspace scan mode: add -> init (no args) -> run -> stop` | エンドツーエンド workspace モード |
 | `init.sh fails with invalid workspace path` | 存在しないパス時エラー |
 | `init.sh fails for repo without .env and no setup.sh` | .env 欠落時エラー |

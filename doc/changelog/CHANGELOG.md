@@ -5,6 +5,17 @@ versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+- `init.sh` resolves each downstream repo's compose against `.env.generated`
+  (base #502's interpolation cache) when present, falling back to `.env`;
+  previously it always read `.env`, leaving interpolation variables empty
+  against any base v0.41 downstream and producing a broken `.multi_compose.yaml`
+  (`container_name: -<repo>`, `image: local/...`). Missing-env bootstrap now
+  probes the post-ADR-00000010 `script/docker/setup.sh` before the legacy
+  `template/script/docker/setup.sh` (kept for un-upgraded repos). `script/ci.sh`
+  honours an `APT_MIRROR_DEBIAN` override for environments where
+  `deb.debian.org` is unreachable. (#17)
+
 ### Changed
 - License migrated from GPL-3.0 to Apache 2.0 (#10). Aligns with
   upstream `osrf/docker_images` and the rest of the
@@ -29,7 +40,7 @@ versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Ungrouped containers keep `network_mode: host` (default behavior).
   A container can appear in multiple groups to bridge them.
 - `parse_network_config.py`: parse `.multi_network.yaml` config
-- 72 tests (51 Bats + 21 Python) + ShellCheck
+- 79 tests (58 Bats + 21 Python) + ShellCheck
 - CI: ShellCheck + Bats + Python coverage + Kcov (via docker compose, DinD)
 - Codecov integration
 

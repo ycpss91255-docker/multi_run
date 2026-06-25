@@ -234,7 +234,7 @@ Same repo from different workspace works because each instance gets a unique ser
 1. **`init.sh --add`** creates a symlink: `workspace/<name> → /absolute/path/to/repo`
 
 2. **`init.sh`** (no args or with paths) for each workspace:
-   - Runs `docker compose --env-file .env config` to fully resolve all `${VAR}` references
+   - Runs `docker compose --env-file <env> config` to fully resolve all `${VAR}` references, where `<env>` is the repo's `.env.generated` interpolation cache (base #502) when present, otherwise the legacy `.env`
    - Uses Python to extract the `devel` service, remove `container_name`, and rename to `{IMAGE_NAME}_{hash}`
    - Appends to `.multi_compose.yaml`
 
