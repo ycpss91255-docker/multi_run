@@ -143,6 +143,69 @@ setup() {
     [[ "${result}" == test_image_* ]]
 }
 
+@test "_path_id reads IMAGE_NAME from .env.generated when present" {
+    local d="${BATS_TEST_TMPDIR}/repo"
+    mkdir -p "${d}"
+    echo "IMAGE_NAME=from_env" > "${d}/.env"
+    echo "IMAGE_NAME=from_generated" > "${d}/.env.generated"
+    run bash -c "source ${REPO_ROOT}/script/lib.sh; _path_id '${d}'"
+    assert_success
+    assert_output --partial "from_generated_"
+}
+
+# ════════════════════════════════════════════════════════════════════
+# lib.sh: _env_file (prefer .env.generated over .env, #17)
+# ════════════════════════════════════════════════════════════════════
+
+@test "_env_file prefers .env.generated when present" {
+    local d="${BATS_TEST_TMPDIR}/repo"
+    mkdir -p "${d}"
+    : > "${d}/.env"
+    : > "${d}/.env.generated"
+    run bash -c "source ${REPO_ROOT}/script/lib.sh; _env_file '${d}'"
+    assert_success
+    assert_output "${d}/.env.generated"
+}
+
+@test "_env_file falls back to .env when no .env.generated" {
+    local d="${BATS_TEST_TMPDIR}/repo"
+    mkdir -p "${d}"
+    : > "${d}/.env"
+    run bash -c "source ${REPO_ROOT}/script/lib.sh; _env_file '${d}'"
+    assert_success
+    assert_output "${d}/.env"
+}
+
+# ════════════════════════════════════════════════════════════════════
+# lib.sh: _setup_wrapper (probe new then legacy setup entry, #17)
+# ════════════════════════════════════════════════════════════════════
+
+@test "_setup_wrapper prefers new script/docker/setup.sh over legacy template path" {
+    local d="${BATS_TEST_TMPDIR}/repo"
+    mkdir -p "${d}/script/docker" "${d}/template/script/docker"
+    : > "${d}/script/docker/setup.sh"
+    : > "${d}/template/script/docker/setup.sh"
+    run bash -c "source ${REPO_ROOT}/script/lib.sh; _setup_wrapper '${d}'"
+    assert_success
+    assert_output "${d}/script/docker/setup.sh"
+}
+
+@test "_setup_wrapper falls back to legacy template setup.sh" {
+    local d="${BATS_TEST_TMPDIR}/repo"
+    mkdir -p "${d}/template/script/docker"
+    : > "${d}/template/script/docker/setup.sh"
+    run bash -c "source ${REPO_ROOT}/script/lib.sh; _setup_wrapper '${d}'"
+    assert_success
+    assert_output "${d}/template/script/docker/setup.sh"
+}
+
+@test "_setup_wrapper fails when no setup entry exists" {
+    local d="${BATS_TEST_TMPDIR}/repo"
+    mkdir -p "${d}"
+    run bash -c "source ${REPO_ROOT}/script/lib.sh; _setup_wrapper '${d}'"
+    assert_failure
+}
+
 # ════════════════════════════════════════════════════════════════════
 # lib.sh: _log / _error
 # ════════════════════════════════════════════════════════════════════
@@ -313,6 +376,25 @@ setup() {
     # Stop
     run bash "${REPO_ROOT}/stop.sh"
     assert_success
+}
+
+@test "init.sh resolves interpolation vars from .env.generated (base #502)" {
+    command -v docker >/dev/null 2>&1 || skip "Docker not available"
+    docker info >/dev/null 2>&1 || skip "Docker daemon not running"
+
+    local mock="${REPO_ROOT}/test/fixture/mock_repo_generated"
+
+    run bash "${REPO_ROOT}/init.sh" "${mock}"
+    assert_success
+    assert_output --partial "Generated"
+
+    # Interpolation must come from .env.generated (IMAGE_NAME=genimg), not the
+    # comments-only .env -- which would leave vars empty and fall back to the
+    # compose defaults (test/mock). The service id (from _path_id) and the
+    # resolved image both carry genimg only when .env.generated was read.
+    run cat "${REPO_ROOT}/.multi_compose.yaml"
+    assert_success
+    assert_output --partial "genimg"
 }
 
 @test "workspace scan mode: add → init (no args) → run → stop" {

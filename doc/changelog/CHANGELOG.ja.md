@@ -5,6 +5,16 @@
 
 ## [未リリース]
 
+### 修正
+- `init.sh` は下流 repo に `.env.generated`（base #502 の補間キャッシュ）がある場合は
+  それを使って compose を解決し、なければ `.env` にフォールバックする。以前は常に
+  `.env` を読んでいたため、base v0.41 にアップグレード済みの下流では補間変数が空になり、
+  壊れた `.multi_compose.yaml`（`container_name: -<repo>`、`image: local/...`）を生成して
+  いた。env 欠落時の bootstrap は post-ADR-00000010 の `script/docker/setup.sh` を先に探り、
+  旧来の `template/script/docker/setup.sh`（未アップグレードの repo 向けに保持）に
+  フォールバックする。`script/ci.sh` は `deb.debian.org` に到達できない環境向けに
+  `APT_MIRROR_DEBIAN` の上書きをサポートする。(#17)
+
 ### 追加
 - 5 スクリプト：`init.sh`、`run.sh`、`exec.sh`、`stop.sh`、`status.sh`
 - `init.sh` サブコマンド：`--add`、`--remove`、`--list`（ワークスペース管理）

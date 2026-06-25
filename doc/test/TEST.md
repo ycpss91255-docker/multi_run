@@ -1,8 +1,8 @@
 # TEST.md
 
-**72 tests** total (51 Bats + 21 Python). Coverage: 100% bash (127/127), 91% Python (60/66).
+**79 tests** total (58 Bats + 21 Python). Coverage: 100% bash, 91% Python (60/66).
 
-## test/multi_run_spec.bats (51 tests)
+## test/multi_run_spec.bats (58 tests)
 
 ### File existence + executable (5)
 
@@ -50,13 +50,19 @@
 | `init.sh --remove fails without arguments` | Error on missing name |
 | `init.sh --remove fails for non-existent name` | Error on unknown name |
 
-### lib.sh functions (7)
+### lib.sh functions (13)
 
 | Test | Description |
 |------|-------------|
 | `_log outputs [multi] prefix` | Log format |
 | `_error outputs ERROR prefix and exits 1` | Error format + exit code |
+| `_env_file prefers .env.generated when present` | Prefer `.env.generated` over `.env` (base #502) |
+| `_env_file falls back to .env when no .env.generated` | Fallback to legacy `.env` |
+| `_setup_wrapper prefers new script/docker/setup.sh over legacy template path` | Probe post-ADR-00000010 layout first |
+| `_setup_wrapper falls back to legacy template setup.sh` | Fallback to legacy template wrapper |
+| `_setup_wrapper fails when no setup entry exists` | Error when repo ships no setup entry |
 | `_path_id generates unique ID from path` | ID format: `{IMAGE_NAME}_{hash}` |
+| `_path_id reads IMAGE_NAME from .env.generated when present` | IMAGE_NAME sourced from `.env.generated` |
 | `_path_id falls back to dirname when no .env` | Fallback to directory name |
 | `_path_id generates different ID for same repo different ws` | Hash differs by path |
 | `_get_workspace_paths returns empty for empty workspace dir` | Empty scan |
@@ -80,11 +86,12 @@
 | `init.sh preserves host mode for ungrouped containers` | Ungrouped = no networks section |
 | `init.sh works normally without .multi_network.yaml` | Backward compatible |
 
-### Integration tests (7, requires Docker daemon)
+### Integration tests (8, requires Docker daemon)
 
 | Test | Description |
 |------|-------------|
 | `full lifecycle: init -> run -> status -> exec -> stop with mock repo` | End-to-end direct path mode |
+| `init.sh resolves interpolation vars from .env.generated (base #502)` | Resolves `${VAR}` from `.env.generated`, not comments-only `.env` |
 | `workspace scan mode: add -> init (no args) -> run -> stop` | End-to-end workspace mode |
 | `init.sh fails with invalid workspace path` | Error on non-existent path |
 | `init.sh fails for repo without .env and no setup.sh` | Error when .env missing |

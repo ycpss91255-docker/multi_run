@@ -219,7 +219,7 @@ flowchart TD
 1. **`init.sh --add`** 建立 symlink：`workspace/<name> → /absolute/path/to/repo`
 
 2. **`init.sh`**（無參數或指定路徑）對每個工作區：
-   - 執行 `docker compose --env-file .env config` 完全展開所有 `${VAR}` 引用
+   - 執行 `docker compose --env-file <env> config` 完全展開所有 `${VAR}` 引用，其中 `<env>` 在 repo 有 `.env.generated`（base #502 插值快取）時用它，否則用舊的 `.env`
    - 使用 Python 提取 `devel` service，移除 `container_name`，重命名為 `{IMAGE_NAME}_{hash}`
    - 附加到 `.multi_compose.yaml`
 

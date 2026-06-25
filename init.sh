@@ -126,10 +126,12 @@ HEADER
     for p in "${gen_paths[@]}"; do
         [[ -f "${p}/compose.yaml" ]] || _error "No compose.yaml in ${p}"
 
-        # Ensure .env
-        if [[ ! -f "${p}/.env" ]]; then
-            if [[ -f "${p}/template/script/docker/setup.sh" ]]; then
-                "${p}/template/script/docker/setup.sh" --base-path "${p}"
+        # Ensure an env file exists (.env.generated preferred, base #502).
+        # Bootstrap a missing one via the repo's setup wrapper if it ships one.
+        if [[ ! -f "$(_env_file "${p}")" ]]; then
+            local setup_sh
+            if setup_sh="$(_setup_wrapper "${p}")"; then
+                "${setup_sh}" --base-path "${p}"
             else
                 _error "No .env in ${p}"
             fi
@@ -137,8 +139,9 @@ HEADER
 
         instance_id="$(_path_id "${p}")"
 
-        # Resolve compose
-        resolved=$(cd "${p}" && docker compose --env-file .env config 2>/dev/null) \
+        # Resolve compose against the derived interpolation cache (#502),
+        # falling back to .env for pre-#502 repos.
+        resolved=$(cd "${p}" && docker compose --env-file "$(_env_file "${p}")" config 2>/dev/null) \
             || _error "Failed to resolve compose in ${p}"
 
         # Check if this workspace has network config

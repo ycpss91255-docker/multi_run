@@ -8,6 +8,17 @@ REPO_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd -P)"
 
 _install_deps() {
     if ! command -v bats >/dev/null 2>&1; then
+        # Allow overriding the Debian mirror for environments where the
+        # stock deb.debian.org is unreachable (e.g. sandboxed CI). Defaults
+        # to the stock mirror; set APT_MIRROR_DEBIAN=cloudfront.debian.net
+        # locally. Mirrors base's APT_MIRROR_DEBIAN convention.
+        local _mirror="${APT_MIRROR_DEBIAN:-deb.debian.org}"
+        if [[ "${_mirror}" != "deb.debian.org" ]]; then
+            sed -i "s|deb.debian.org|${_mirror}|g" \
+                /etc/apt/sources.list \
+                /etc/apt/sources.list.d/*.list \
+                /etc/apt/sources.list.d/*.sources 2>/dev/null || true
+        fi
         apt-get update -qq
         apt-get install -y --no-install-recommends \
             bats bats-support bats-assert shellcheck \
@@ -78,6 +89,7 @@ _run_via_compose() {
     docker compose -f "${REPO_ROOT}/compose.yaml" run --rm \
         -e HOST_UID="$(id -u)" \
         -e HOST_GID="$(id -g)" \
+        -e APT_MIRROR_DEBIAN="${APT_MIRROR_DEBIAN:-}" \
         ci
 }
 

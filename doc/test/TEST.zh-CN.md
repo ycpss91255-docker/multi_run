@@ -50,13 +50,19 @@
 | `init.sh --remove fails without arguments` | 缺少名称时报错 |
 | `init.sh --remove fails for non-existent name` | 名称不存在时报错 |
 
-### lib.sh 函数（7）
+### lib.sh 函数（13）
 
 | 测试项目 | 说明 |
 |----------|------|
 | `_log outputs [multi] prefix` | 日志格式 |
 | `_error outputs ERROR prefix and exits 1` | 错误格式 + exit code |
+| `_env_file prefers .env.generated when present` | 优先 `.env.generated` 而非 `.env`（base #502） |
+| `_env_file falls back to .env when no .env.generated` | 回退旧的 `.env` |
+| `_setup_wrapper prefers new script/docker/setup.sh over legacy template path` | 先探 post-ADR-00000010 版面 |
+| `_setup_wrapper falls back to legacy template setup.sh` | 回退旧的 template wrapper |
+| `_setup_wrapper fails when no setup entry exists` | 无 setup entry 时报错 |
 | `_path_id generates unique ID from path` | ID 格式：`{IMAGE_NAME}_{hash}` |
+| `_path_id reads IMAGE_NAME from .env.generated when present` | IMAGE_NAME 取自 `.env.generated` |
 | `_path_id falls back to dirname when no .env` | 无 .env 时回退到目录名 |
 | `_path_id generates different ID for same repo different ws` | 不同路径产生不同 hash |
 | `_get_workspace_paths returns empty for empty workspace dir` | 空目录扫描 |
@@ -71,11 +77,12 @@
 | `exec.sh fails without arguments` | 缺少 service name 时报错 |
 | `init.sh --list shows empty when workspace dir missing` | 处理不存在的目录 |
 
-### 集成测试（7，需要 Docker daemon）
+### 集成测试（8，需要 Docker daemon）
 
 | 测试项目 | 说明 |
 |----------|------|
 | `full lifecycle: init -> run -> status -> exec -> stop with mock repo` | 端到端直接路径模式 |
+| `init.sh resolves interpolation vars from .env.generated (base #502)` | 从 `.env.generated` 解析 `${VAR}`，而非仅含注释的 `.env` |
 | `workspace scan mode: add -> init (no args) -> run -> stop` | 端到端 workspace 模式 |
 | `init.sh fails with invalid workspace path` | 路径不存在时报错 |
 | `init.sh fails for repo without .env and no setup.sh` | .env 缺失时报错 |

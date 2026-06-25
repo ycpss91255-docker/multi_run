@@ -5,6 +5,15 @@
 
 ## [未發布]
 
+### 修復
+- `init.sh` 在下游 repo 有 `.env.generated`（base #502 的插值快取）時改用它解析
+  compose，否則回退 `.env`；先前一律讀 `.env`，對任何升級到 base v0.41 的下游
+  會使插值變數變空，產出損壞的 `.multi_compose.yaml`（`container_name: -<repo>`、
+  `image: local/...`）。缺 env 的 bootstrap 現在先探 post-ADR-00000010 的
+  `script/docker/setup.sh`，再回退舊的 `template/script/docker/setup.sh`（保留給
+  未升級的 repo）。`script/ci.sh` 支援 `APT_MIRROR_DEBIAN` 覆寫，供
+  `deb.debian.org` 不可達的環境使用。(#17)
+
 ### 新增
 - 5 個腳本：`init.sh`、`run.sh`、`exec.sh`、`stop.sh`、`status.sh`
 - `init.sh` 子指令：`--add`、`--remove`、`--list`（工作區管理）
