@@ -32,12 +32,28 @@ _env_file() {
     fi
 }
 
+# _setup_wrapper echoes the first existing setup-wrapper entry a downstream
+# repo ships, probed newest-layout first: the post-ADR-00000010 consumer
+# symlink (script/docker/setup.sh) then the legacy template wrapper
+# (template/script/docker/setup.sh, still shipped by un-upgraded repos).
+# Exit 1 with no output when the repo ships neither.
+_setup_wrapper() {
+    local repo_path="$1" candidate
+    for candidate in "script/docker/setup.sh" "template/script/docker/setup.sh"; do
+        if [[ -f "${repo_path}/${candidate}" ]]; then
+            echo "${repo_path}/${candidate}"
+            return 0
+        fi
+    done
+    return 1
+}
+
 # ── Path ID ──────────────────────────────────────────────────────────────────
 
 _path_id() {
     local abs_path="$1"
     local image_name
-    image_name=$(grep -oP 'IMAGE_NAME=\K.*' "${abs_path}/.env" 2>/dev/null || basename "${abs_path}")
+    image_name=$(grep -oP 'IMAGE_NAME=\K.*' "$(_env_file "${abs_path}")" 2>/dev/null || basename "${abs_path}")
     local hash
     hash=$(echo "${abs_path}" | md5sum | cut -c1-4)
     echo "${image_name}_${hash}"
